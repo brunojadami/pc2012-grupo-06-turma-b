@@ -5,12 +5,15 @@
 # See below the flags for each target:
 #
 
-FLAGS=-Wall
+FLAGS=-Wall -lgmpxx -lgmp
 CC=g++
 	
 all: debug
 
-debug: FLAGS += -g -p
+clean: 
+	rm -rf precision gauss gauss-threaded borwein borwein-threaded monte monte-threaded
+
+debug: FLAGS += -g
 release: FLAGS += -s -O2
 
 debug: build
@@ -18,17 +21,18 @@ release: build
 
 build: precision gauss borwein monte
 
+# The precision is compiled apart.
 precision: precision.cpp 
-	$(CC) -c $(FLAGS) precision.cpp -o precision
+	$(CC) -Wall -s -O2 precision.cpp -o precision
 
 gauss: gauss.cpp gauss-threaded.cpp
-	$(CC) -c $(FLAGS) gauss.cpp -o gauss
-	$(CC) -c $(FLAGS) gauss-threaded.cpp -o gauss-threaded
+	$(CC) $(FLAGS) gauss.cpp -o gauss
+	$(CC) $(FLAGS) gauss-threaded.cpp -o gauss-threaded
 	
 borwein: borwein.cpp borwein-threaded.cpp
-	$(CC) -c $(FLAGS) borwein.cpp -o borwein
-	$(CC) -c $(FLAGS) borwein-threaded.cpp -o borwein-threaded
+	$(CC) $(FLAGS) borwein.cpp -o borwein
+	$(CC) $(FLAGS) borwein-threaded.cpp -o borwein-threaded
 	
 monte: monte.cpp monte-threaded.cpp
-	$(CC) -c $(FLAGS) monte.cpp -o monte
-	$(CC) -c $(FLAGS) monte-threaded.cpp -o monte-threaded
+	$(CC) $(FLAGS) monte.cpp -o monte
+	$(CC) $(FLAGS) monte-threaded.cpp -o monte-threaded
