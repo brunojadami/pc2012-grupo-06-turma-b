@@ -4,7 +4,7 @@
 #include <ctime>
 
 // Real precision is ~ PRECISION * 0.3012
-#define PRECISION 33200
+#define PRECISION 3320053
 
 using namespace std;
 

@@ -5,7 +5,7 @@
 # See below the flags for each target:
 #
 
-FLAGS=-Wall
+FLAGS=
 CC=g++
 	
 all: debug
