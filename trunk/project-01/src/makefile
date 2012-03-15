@@ -34,5 +34,5 @@ borwein: borwein.cpp borwein-threaded.cpp
 	$(CC) $(FLAGS) borwein-threaded.cpp -o borwein-threaded
 	
 monte: monte.cpp monte-threaded.cpp
-	$(CC) $(FLAGS) monte.cpp -o monte
-	$(CC) $(FLAGS) monte-threaded.cpp -o monte-threaded
+	$(CC) $(FLAGS) monte.cpp -o monte -O3
+	$(CC) $(FLAGS) monte-threaded.cpp -lpthread -o monte-threaded -O3
