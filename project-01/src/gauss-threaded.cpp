@@ -77,6 +77,8 @@ mpf_class pi = mpf_class(1, PRECISION);
 int iteration;
 // Mutex used to the main wait the ends of the threads.
 sem_t mutex;
+// Mutex used to update the iteration integer.
+sem_t itMutex;
 
 /**
  * End of global scope.
@@ -87,10 +89,13 @@ sem_t mutex;
  */
 void finalizeIteration()
 {
+	sem_wait(&itMutex);
+	iteration++;
 	if (iteration == 3)
 	{
 		sem_post(&mutex);
 	}
+	sem_post(&itMutex);
 }
 
 /**
@@ -100,7 +105,7 @@ void* calculateAT(void*)
 {
 	ai = (ai_ + bi_) / 2;
 	ti = ti_ - pi * (ai_ - ai) * (ai_ - ai);
-	iteration++;
+	
 	finalizeIteration();
 }
 
@@ -110,7 +115,7 @@ void* calculateAT(void*)
 void* calculateB(void*)
 {
 	bi = sqrt(bi_ * ai_);
-	iteration++;
+	
 	finalizeIteration();
 }
 
@@ -121,6 +126,7 @@ void* calculateP(void*)
 {
 	pi =  2 * pi_;
 	iteration++;
+	
 	finalizeIteration();
 }
 
@@ -147,6 +153,7 @@ int main()
 		
 		iteration = 0;
 		sem_init(&mutex, 0, 0);
+		sem_init(&itMutex, 0, 1);
 		
 		// Calculates the values for the current iteration using threads.
 		pthread_t thread;
@@ -155,6 +162,10 @@ int main()
 		pthread_create(&thread, NULL, calculateP, NULL);
 		
 		sem_wait(&mutex);
+		
+		// Must destroy the semaphores.
+		sem_destroy(&mutex);
+		sem_destroy(&itMutex);
 		
 		// Prints the 'pi' value.
 		cout << ((ai + bi) * (ai + bi) / (4 * ti)) << endl;
