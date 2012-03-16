@@ -1,25 +1,11 @@
 // Include for GNU MP.
 #include <gmpxx.h>
 #include <iostream>
-#include <ctime>
 
 // Real precision is ~ PRECISION * 0.3012
 #define PRECISION 3320053
 
 using namespace std;
-
-/**
- * Gets the current time in nanoseconds.
- */
-long long getTime()
-{
-	timespec t;
-	if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t) == 0)
-	{
-		return t.tv_sec * (long long) 1000000000 + t.tv_nsec;
-	}
-	return 0;
-}
 
 /**
  * Calculates the square root of the parameter f.
@@ -63,9 +49,6 @@ int main()
 	// Sets output precision.
 	cout.precision(PRECISION);
 	
-	// Saves the start time.
-	long long startTime = getTime();
-	
 	// Initial values: a0, b0, t0, p0.
 	mpf_class ai = mpf_class(1, PRECISION);
 	mpf_class bi = mpf_class(0.707106781, PRECISION);
@@ -97,9 +80,6 @@ int main()
 		// Prints the 'pi' value.
 		cout << ((ai + bi) * (ai + bi) / (4 * ti)) << endl;
 	}
-	
-	// Prints the time elapsed.
-	cout << "time elapsed (ns): " << (getTime() - startTime) << endl;
 
 	return 0;
 }
