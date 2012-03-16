@@ -1,0 +1,67 @@
+Introdução:
+
+O algoritmo de Monte Carlo é um método estatístico para calcular funções complexas
+de um modo aproximado. Este método tipicamente envolve a geração de observações de 
+alguma distribuição de probabilidades e o uso da amostra obtida para aproximar a 
+função de interesse. As aplicações mais comuns são em computação numérica para avaliar 
+integrais. A ideia do método é escrever a integral que se deseja calcular como um valor 
+esperado. O número PI pode ser estimado através do método de Monte Carlo. 
+
+Foi utilizado o método de Monte Carlo para calcular a área de 1/4 do círculo. A partir 
+deste valor, podemos estimar o valor do PI. O número de iterações do algoritmo determina 
+a precisão do cálculo, cada casa decimal a mais multiplica um fator de 10x na quantidade
+de iterações necessárias para tal. Observe que mesmo tendo várias casas decimais, isso
+nao implica que as casas estão corretas!
+
+Area = 1/4 * PI * R²
+Area*4/R² = PI
+
+No método de Monte Carlo:
+
+Area = Pontos Dentro do Círculo (área do círculo) / Pontos Totais (área do quadrado)
+
+Então:
+
+PI = Pontos Dentro do Círculo / Pontos Totais * 4
+
+Observe que o raio pode ser um valor arbitrário, no caso foi utilizado o RAND_MAX, maior
+valor aleatório gerado pela função rand() em C.
+
+Algoritmo:
+
+pontosDentro = 0
+pontosTotais = 0
+M = 1000000000 (10^9, dando 9 casas no resultado de PI)
+
+pontosTotais = M
+
+fazer M iteracoes
+	a = rand()
+	b = rand()
+	se a*a + b*b <= r*r 
+		++pontosDentro
+		
+PI = 4*pontosDentro/pontosTotais
+
+Solução:
+
+Em ambos os métodos, não precisamos utilizar nenhuma biblioteca de números grandes,
+pois para chegar a tal tamanho de precisão iria ser necessário mais do que 10^19
+iterações!
+
+Método simples -
+
+No método simples, o algoritmo foi implementado direto. O número que é impresso na
+tela é o PI tirando a vírgula (ex: 3,1415 => 31415).
+
+Método com threads -
+
+No método com threads, foi utilizada a biblioteca pthreads (POSIX Threads) para 
+a criação das threads do programa. 
+Foram criadas N threads. Cada thread é responsável por gerar M' pontos. Se multiplicarmos
+M' por N teremos o M utilizado no método sequencial, ou seja, cada thread gera um pouco dos
+M pontos aleatórios!
+
+Resultados:
+
+// TODO
