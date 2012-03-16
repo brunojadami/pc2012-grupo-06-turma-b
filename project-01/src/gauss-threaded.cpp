@@ -1,7 +1,6 @@
 // Include for GNU MP.
 #include <gmpxx.h>
 #include <iostream>
-#include <ctime>
 #include <pthread.h>
 #include <semaphore.h>
 
@@ -9,19 +8,6 @@
 #define PRECISION 3320053
 
 using namespace std;
-
-/**
- * Gets the current time in nanoseconds.
- */
-long long getTime()
-{
-	timespec t;
-	if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t) == 0)
-	{
-		return t.tv_sec * (long long) 1000000000 + t.tv_nsec;
-	}
-	return 0;
-}
 
 /**
  * Calculates the square root of the parameter f.
@@ -138,9 +124,6 @@ int main()
 	// Sets output precision.
 	cout.precision(PRECISION);
 	
-	// Saves the start time.
-	long long startTime = getTime();
-	
 	int i = getIterations(PRECISION);
 	
 	while (i-- > 0)
@@ -170,9 +153,6 @@ int main()
 		// Prints the 'pi' value.
 		cout << ((ai + bi) * (ai + bi) / (4 * ti)) << endl;
 	}
-	
-	// Prints the time elapsed.
-	cout << "time elapsed (ns): " << (getTime() - startTime) << endl;
 
 	return 0;
 }
