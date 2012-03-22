@@ -3,7 +3,7 @@
 #include <iostream>
 
 // Real precision is ~ PRECISION * 0.3012
-#define PRECISION 3320053
+#define PRECISION 33200531
 
 using namespace std;
 
