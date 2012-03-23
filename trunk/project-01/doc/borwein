@@ -1,0 +1,41 @@
+Introdução:
+
+O algoritmo de Borwein, criado pelos matemáticos Jonathan e Peter Borwein, é usado para calcular
+o valor de PI, com a precisão aumentando a cada iteração.
+Existem várias versões do algoritmo. Utilizamos uma versão que quadruplica o número de dígitos corretos
+a cada iteração, gerando 10 milhões de dígitos em apenas 12 iterações.
+
+
+Algoritmo:
+
+Começar com:
+
+a0 = 6 - 4*sqrt(2)
+y0 = sqrt(2) - 1
+
+A cada iteração:
+
+yk+1 = (1 - (1 - yk^4)^(1/4))/(1 + (1 - yk^4)^(1/4))
+ak+1 = ak*(1 + yk+1)^4 - 2^(2k+3)*yk+1(1 + yk+1 + yk+1^2)
+
+Solução:
+
+Em ambos os métodos, foi utilizada a biblioteca GNU MP, uma biblioteca open-source
+para as linguagens C e C++ que é capaz de criar números com infinitas casas decimais.
+Ela foi usada porque as variáveis do tipo double não alcançam essa precisão.
+
+Método simples -
+
+No método simples, o algoritmo foi implementado direto. Variáveis auxiliares
+(com sufixo '_') foram utilizadas para guardar os resultados da iteração anterior.
+
+Método com threads -
+
+No método com threads, foi utilizada a biblioteca pthreads (POSIX Threads) para
+a criação das threads do programa.
+Foram utilizadas duas threads, uma para calcular y e outra para calcular a.
+A implementação não é eficiente, já que para calcular a, é necessário esperar o resultado de y.
+
+Resultados:
+
+// TODO
