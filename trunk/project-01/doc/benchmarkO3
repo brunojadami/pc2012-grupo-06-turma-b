@@ -1,0 +1,47 @@
+SEM THREAD
+
+CISC 	real	0m4.156s
+
+CLUS	real	0m7.393s
+
+1 THREAD
+
+CISC	real	0m6.088s
+	
+CLUS	real	0m11.866s
+
+4 THREADS	
+
+CISC	real	0m7.987s
+
+CLUS	real	0m36.462s
+
+10 THREADS	
+
+CISC	real	0m6.084s
+
+CLUS	real	0m23.697s
+
+25 THREADS	
+
+CISC	real	0m3.570s
+
+CLUS	real	0m9.125s
+
+50 THREADS	
+
+CISC	real	0m2.925s
+
+CLUS	real	0m12.869s
+
+100 THREADS	
+
+CISC	real	0m3.200s
+
+CLUS	real	0m13.614s
+
+500 THREADS	
+
+CISC	real	0m6.220s
+
+CLUS	real	0m32.321s

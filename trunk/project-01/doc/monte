@@ -14,18 +14,14 @@ de iterações necessárias para tal. Observe que mesmo tendo várias casas deci
 nao implica que as casas estão corretas!
 
 Area = 1/4 * PI * R²
-Area*4/R² = PI
+Area * 4 / R² = PI
 
-No método de Monte Carlo:
+Área = Pontos Dentro do Círculo (área do círculo) / Pontos Totais (área do quadrado)
 
-Area = Pontos Dentro do Círculo (área do círculo) / Pontos Totais (área do quadrado)
+PI = (Pontos Dentro do Círculo / Pontos Totais) * 4
 
-Então:
-
-PI = Pontos Dentro do Círculo / Pontos Totais * 4
-
-Observe que o raio pode ser um valor arbitrário, no caso foi utilizado o RAND_MAX, maior
-valor aleatório gerado pela função rand() em C.
+Observe que o raio pode ser um valor arbitrário, usamos como raio o maior número
+aleatório possível, nos cáculos é expĺicado o porquê.
 
 Algoritmo:
 
@@ -38,7 +34,7 @@ pontosTotais = M
 fazer M iteracoes
 	a = rand()
 	b = rand()
-	se a*a + b*b <= r*r 
+	se sqrt(a*a + b*b) <= r
 		++pontosDentro
 		
 PI = 4*pontosDentro/pontosTotais
@@ -46,8 +42,7 @@ PI = 4*pontosDentro/pontosTotais
 Solução:
 
 Em ambos os métodos, não precisamos utilizar nenhuma biblioteca de números grandes,
-pois para chegar a tal tamanho de precisão iria ser necessário mais do que 10^19
-iterações!
+pois iria ser necessário mais do que 10^19 iterações para justificar o uso!
 
 Método simples -
 
@@ -57,11 +52,71 @@ tela é o PI tirando a vírgula (ex: 3,1415 => 31415).
 Método com threads -
 
 No método com threads, foi utilizada a biblioteca pthreads (POSIX Threads) para 
-a criação das threads do programa. 
-Foram criadas N threads. Cada thread é responsável por gerar M' pontos. Se multiplicarmos
-M' por N teremos o M utilizado no método sequencial, ou seja, cada thread gera um pouco dos
-M pontos aleatórios!
+a criação das threads do programa. Foram criadas N threads. Cada thread é responsável 
+por gerar M' pontos. Se multiplicarmos M' por N teremos o M utilizado no método sequencial, 
+ou seja, cada thread gera um pouco dos M pontos aleatórios! No fim tudo é somado obtendo
+o número esperado. Observe que as threads são idependentes, não precisando de mutex ou
+sincronizações!
+
+Números aleatórios:
+
+No C podemos usar a função rand() da stdlib para gerar os números aleatórios, porém segundo
+o padrão do C, a função não é thread-safe, ou seja, não há garantias quanto ao uso desta função
+em várias threads. Investigando mais a fundo, a implementação da função rand() pela libc usa
+locks de contexto, ou seja, apenas uma thread por vez pode chamar a função rand()! Isto iria
+aumentar drasticamente o tempo do algoritmo, funcionando como algo serial. Então foi implementado 
+um gerador congruente linear, usando parâmetros parecidos com o mesmo usado pelo gcc, de tal modo 
+que o gerador seja uniforme:
+
+X(n+1) = (A*X(n)+C) % M
+
+X(0) = time(NULL) ** número inicial (seed) de acordo com o tempo atual..
+A = 1103515245
+C = 12345
+M = 2^31
+
+Cálculos:
+
+O maior número aleatório gerado é 2^31-1 (cabe em um inteiro de 32 bits com sinal, int em C no gcc). 
+Este valor foi usado para a conta logo abaixo caber num inteiro de 64 bits com sinal (long long em C no gcc), 
+Para não precisar usar o módulo no gerador, os bits são apenas truncados nas contas, deixando mais 
+rápido os cáculos, por isso o módulo é 2^31. Para verificar se o ponto está dentro do círculo não é preciso 
+usar pontos flutuantes ou raíz quadrada, deixando os cálculos mais rápidos e precisos:
+
+sqrt(a*a + b*b) <= r
+é equivalente a
+a*a + b*b <= r*r
 
 Resultados:
 
-// TODO
+Usamos o comando time do linux, que conta o tempo de execução de um processo. Foram testados 
+várias quantidades de threads, outros processos no computador estavam sendo executados, podendo
+ter algumas variações no tempo. 
+
+Os resultados no laboratório do CISC lab 7, Linux version 2.6.26-2-amd64 (Debian 2.6.26-26lenny3)
+(gcc version 4.1.3 20080704 (prerelease) (Debian 4.1.2-25)), processador Intel(R) Core(TM)2 Quad CPU
+Q9650  @ 3.00GHz, foram:
+
+****Gráfico 1****
+
+Os resultados no cluster, Linux version 2.6.18.8-0.1-default (geeko@buildhost) (gcc version 4.1.2 
+20061115 (prerelease) (SUSE Linux)), processador Intel(R) Pentium(R) 4 CPU 3.40GHz, foram:
+
+****Gráfico 2****
+
+Podemos concluir que o número ideal de threads depende da quantidade de núcleos/unidades de processamento
+do computador utilizado. Se este número é pequeno, não será utilizado toda a capacidade de processamento,
+se o número é grande, o overhead do escalonamento do sistema operacional para alocar o processamento de
+cada thread (no caso número de threads >>> unidades de processamento) será muito grande, deixando lento
+o método.
+
+Referências:
+
+http://pubs.opengroup.org/onlinepubs/009695399/functions/rand.html
+http://www.gnu.org/software/libc/download.html
+http://cer.freeshell.org/renma/LibraryRandomNumber/
+http://en.wikipedia.org/wiki/Linear_congruential_generator
+http://mathworld.wolfram.com/MonteCarloMethod.html
+http://www.chem.unl.edu/zeng/joy/mclab/mcintro.html
+http://en.wikipedia.org/wiki/Native_POSIX_Thread_Library
+http://www.icir.org/gregor/tools/pthread-scheduling.html
