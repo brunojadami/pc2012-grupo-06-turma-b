@@ -5,37 +5,46 @@
 #include <cstdio>
 #include <ctime>
 #include <cstring>
-#include <cstdlib>
-#include <climits>
 #include <errno.h>
 #include <cstring>
+#include <climits>
 
 /**
  * Defines.
  */
-#define T ((LL)RAND_MAX)*(RAND_MAX) // The size of the bounding square.
 #define LL long long // Long long alias.
-#define M 2500000 // Number of iterations.
-#define N 4 // Number of threads, N*M should equal to the M on the serial version.
+#define M 1000000000 // Number of iterations.
+#define N 50 // Number of threads, N should divide M!
 
 pthread_t threads[N]; // PThreads objects.
 LL area[N]; // Areas counter, number of points inside the area, we use this to avoid mutexes (more overhead).
+
+const int A = 1103515245, C = 12345; // Parameters of the linear random number generator.
+const LL T = (LL)INT_MAX*INT_MAX; // The bounding position of the outter square.
+
+/**
+ * Generates the next random number.
+ */
+int next(int& x)
+{
+	return x = x*A+C;
+}
 
 /**
  * Thread function.
  */
 void* function(void* ptr)
 {
-	LL a, b, cntr;
-	int i;
+	LL a, b, cntr, lim = M/N; // lim is the number of iterations.
+	int i, x = time(NULL);
 	memcpy(&i, &ptr, sizeof(i)); // Getting the index of the area array we need to use.
 	
 	// Monte Carlo loop.
-	for (cntr = 0; cntr < M; ++cntr)
+	for (cntr = 0; cntr < lim; ++cntr)
 	{
-		a = rand();
-		b = rand();
-		if (a*a - T <= -b*b) ++area[i]; // Checking if the point is inside the circle.
+		a = next(x);
+		b = next(x);
+		if (a*a + b*b <= T) ++area[i]; // Checking if the point is inside the circle.
 	}
 	
 	return NULL;
@@ -46,9 +55,6 @@ void* function(void* ptr)
  */
 int main()
 {
-	srand(time(NULL)); // Generate seed.
-	printf("RAND MAX IS: %d\n", RAND_MAX); // Check the random max value, probably 2^32 -1.
-	
 	// Creating threads.
 	for (int i = 0; i < N; ++i)
 	{
