@@ -2,10 +2,9 @@
 #include <gmpxx.h>
 #include <iostream>
 #include <pthread.h>
-#include <semaphore.h>
 
 // Real precision is ~ PRECISION * 0.3012
-#define PRECISION 320053
+#define PRECISION 33200531
 
 
 using namespace std;
@@ -70,30 +69,10 @@ mpf_class ai = mpf_class(6 - sqrt(2)*4, PRECISION);
 
 mpf_class yi = mpf_class(-1 + sqrt(2), PRECISION);
 
-
-// Integer that keeps the count of how many threads finished.
-int iteration;
-// Mutex used to the main wait the ends of the threads.
-sem_t mutex;
-// Mutex used to update the iteration integer.
-sem_t itMutex;
-// Mutex to wait for Y to be calculated.
-sem_t yMutex;
-
 /**
  * End of global scope.
  */
 
-void finalizeIteration()
-{
-        sem_wait(&itMutex);
-        iteration++;
-        if (iteration == 2)
-        {
-                sem_post(&mutex);
-        }
-        sem_post(&itMutex);
-}
 
 /**
  * Calculates ai.
@@ -101,7 +80,6 @@ void finalizeIteration()
 void* calculateA(void*)
 {
 	ai = ai_*pow(1 + yi, 4) - pow(2, 2*i + 3)*yi*(1 + yi + pow(yi, 2));
-        finalizeIteration();
 }
 
 /**
@@ -110,8 +88,7 @@ void* calculateA(void*)
 void* calculateY(void*)
 {
 	yi = (1 - sqrt(sqrt(1 - pow(yi_, 4))))/(1 + sqrt(sqrt(1 - pow(yi_, 4))));
-                sem_post(&yMutex);
-	finalizeIteration();
+
 }
 
 
@@ -134,22 +111,12 @@ int main()
 		ai_ = ai;
 		yi_ = yi;
 
-                iteration = 0;
-                sem_init(&mutex, 0, 0);
-                sem_init(&yMutex, 0, 0);
-                sem_init(&itMutex, 0, 1);
-
                 // Calculates the values for the current iteration using threads.
-                pthread_t thread;
-                pthread_create(&thread, NULL, calculateY, NULL);
-                sem_wait(&yMutex);
-                pthread_create(&thread, NULL, calculateA, NULL);
-		
-                sem_wait(&mutex);
-                
-                // Must destroy the semaphores.
-                sem_destroy(&mutex);
-                sem_destroy(&itMutex);
+		pthread_t threadA, threadY;
+                pthread_create(&threadY, NULL, calculateY, NULL);
+		pthread_join(threadY, NULL);
+                pthread_create(&threadA, NULL, calculateA, NULL);
+		pthread_join(threadA, NULL);
 
 	}
 	// Prints pi.
