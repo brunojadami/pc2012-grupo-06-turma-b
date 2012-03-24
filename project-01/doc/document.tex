@@ -69,8 +69,8 @@ Julio Cezar Estrella
 
 \section{Introdução}
 \subsection{Algoritmo de Gauss-Legendre}
-O algoritmo Gauss-Legendre,baseado no trabalho individual de Carl Friedrich Gauss 
-e Adrien-Marie Legendre é um algoritmo para calcular os dígitos de PI. Sua
+O algoritmo de Gauss-Legendre, baseado no trabalho individual de Carl Friedrich Gauss 
+e Adrien-Marie Legendre, é um algoritmo para calcular os dígitos de \begin{math}\pi\end{math}. Sua
 característica principal é sua convergência rápida, de segunda ordem, onde 24 
 iterações produzem 10 milhões de dígitos corretos de \begin{math}\pi\end{math}. Ele segue os seguintes 
 passos:
@@ -104,7 +104,7 @@ passos:
 \subsection{Algoritmo de Borwein}
 O algoritmo de Borwein, criado pelos matemáticos Jonathan e Peter Borwein, é 
 usado para calcular o valor de \begin{math}\pi\end{math}, com a precisão aumentando a cada iteração.
-Existem várias versões do algoritmo. A versão utilizada quadruplica 
+Existem várias versões do algoritmo. A versão utilizada no trabalho quadruplica 
 o número de dígitos corretos a cada iteração, gerando 10 milhões de dígitos em 
 apenas 12 iterações. Ela segue os seguintes passos:
 
@@ -193,7 +193,7 @@ O maior número aleatório gerado é \begin{math}2^{31} - 1\end{math} (cabe em u
 Este valor foi usado para a conta logo abaixo caber num inteiro de 64 bits com sinal (long long em C no gcc), 
 Para não precisar usar o módulo no gerador, os bits são apenas truncados nas contas, deixando mais 
 rápido os cáculos, por isso o módulo é \begin{math}2^{31}\end{math}. Para verificar se o ponto está dentro do círculo não é preciso 
-usar pontos flutuantes ou raíz quadrada, deixando os cálculos mais rápidos e precisos:
+usar pontos flutuantes ou raiz quadrada, deixando os cálculos mais rápidos e precisos:
 
 \begin{displaymath}
 	R = \sqrt{a^2 + b^2}
@@ -214,7 +214,7 @@ No método paralelo, foi utilizada a biblioteca pthreads (POSIX Threads) para
 a criação das threads do programa. No algoritmo de Monte Carlo, foram criadas N threads. 
 Cada thread é responsável por gerar M' pontos. Se multiplicarmos M' por N teremos 
 o M utilizado no método sequencial, ou seja, cada thread gera um pouco dos M pontos aleatórios. 
-No fim tudo é somado obtendo o número esperado. Observe que as threads são idependentes, 
+No fim tudo é somado obtendo o número esperado. Observe que as threads são independentes, 
 não precisando de mutex ou sincronizações. No algoritmo de Borwein, foram utilizadas duas threads, uma para 
 calcular \begin{math}y_{k+1}\end{math} e outra para calcular \begin{math}a_{k+1}\end{math}.
 No algoritmo de Gauss-Lagrange, foram criadas três threads, uma para calcular
@@ -226,12 +226,31 @@ Nos experimentos, o comando time do Linux, que conta o tempo de execução de um
 processo, foi utilizado. Além disso, os comandos de impressão dos dígitos de \begin{math}\pi\end{math} 
 foram removidos para que apenas o tempo de processamento fosse computado. Para o
 algoritmo de Monte Carlo, foram testados várias quantidades de threads, com a otimização
-O3 e sem. Para os outros dois algoritmos, as otimizações O3, O2, O1 e default foram
-utilizadas.\\\\
+O3 e sem. Para os outros dois algoritmos, as otimizações O3, O2, O1 e sem otimização foram
+utilizadas. Além disso, para os algoritmos que utilizaram a GNU MP, a precisão passada
+à biblioteca foi 3.32 maior que 10 milhões, pois este número não é necessariamente a precisão final. 
+Portanto, o número de iterações nesses casos foi um pouco maior. Esse valor foi calculado empiricamente.\\
 
-Colocar os gráficos.\\\\
+\begin{figure}[float=h]
+	\begin{center}
+		\scalebox{0.5}{\includegraphics{gauss-borwein}}
+	\end{center}
+	\caption{Resultados dos algoritmos de Gauss-Legendre e Borwein}
+\end{figure}
+\begin{figure}[float=h]
+	\begin{center}
+		\scalebox{0.5}{\includegraphics{mc}}
+	\end{center}
+	\caption{Resultados do algoritmo de Monte Carlo sem otimização}
+\end{figure}
+\begin{figure}[float=h]
+	\begin{center}
+		\scalebox{0.5}{\includegraphics{mcO3}}
+	\end{center}
+	\caption{Resultados do algoritmo de Monte Carlo com otimização}
+\end{figure}
 
-Observando os resultados, para o método de Monte Carlo, é possível concluir que o 
+Observando os resultados nas figuras de 1 a 3, para o método de Monte Carlo, é possível concluir que o 
 número ideal de threads depende da quantidade de núcleos/unidades de processamento
 do computador utilizado. Se este número é pequeno, não será utilizado toda a capacidade 
 de processamento, se o número é grande, o overhead do escalonamento do sistema operacional 
@@ -241,7 +260,8 @@ pode ser considerado. Os algoritmos de Gauss-Legendre e Borwein, como são itera
 tiveram apenas um pequeno ganho de tempo. Isto é, cada iteração depende da anterior,
 fazendo com que a abordagem paralela não seja muito chamativa. Em especial, no
 algoritmo de Borwein, a implementação não é eficiente, já que para calcular \begin{math}a_{k+1}\end{math}, 
-é necessário esperar o resultado de \begin{math}y_{k+1}\end{math}. Este pequeno ganho nos
+é necessário esperar o resultado de \begin{math}y_{k+1}\end{math}. No algoritmo de
+Gauss-Legendre, há essa dependência apenas para \begin{math}a_{n+1}\end{math} e \begin{math}t_{n+1}\end{math}. Este pequeno ganho nos
 métodos também pode ser duvidável, visto que outros processos no computador 
 estavam sendo executados, podendo influenciar no cálculo do tempo de execução. 
 
@@ -252,4 +272,17 @@ Um arquivo makefile foi criado para facilitar a compilação dos códigos. Para 
 basta executar \emph{make release}. As bibliotecas GNU MP e pthreads devem estar
 instaladas para o sucesso da operação. Os binários serão gerados na mesma pasta.
 
+\section{Referências}
+\begin{itemize}
+\item http://pubs.opengroup.org/onlinepubs/009695399/functions/rand.html
+\item http://www.gnu.org/software/libc/download.html
+\item http://cer.freeshell.org/renma/LibraryRandomNumber/
+\item http://en.wikipedia.org/wiki/Linear\_congruential\_generator
+\item http://mathworld.wolfram.com/MonteCarloMethod.html
+\item http://www.chem.unl.edu/zeng/joy/mclab/mcintro.html
+\item http://en.wikipedia.org/wiki/Native\_POSIX\_Thread\_Library
+\item http://www.icir.org/gregor/tools/pthread-scheduling.html
+\item http://en.wikipedia.org/wiki/Gauss-Legendre\_algorithm
+\item http://en.wikipedia.org/wiki/Borwein's\_algorithm
+\end{itemize}
 \end{document}
