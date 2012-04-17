@@ -1,10 +1,9 @@
 #!/bin/bash
 for ((threads = 2; threads <= 20; threads++))
 do
-	for ((size = 4; size <= 37; size++))
+	for ((size = 1; size <= 40; size += 5))
 	do
 		make -s N_THREADS=$threads BLOCK_SIZE=$size
-		echo -n "$threads $size "
-		/usr/bin/time -f "%e" ./main < small.in
+		/usr/bin/time -f "$threads $size %e" ./main < small.in
 	done
 done
