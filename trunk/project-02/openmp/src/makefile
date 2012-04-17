@@ -5,7 +5,15 @@
 # See below the flags for each target:
 #
 
-FLAGS= -fopenmp
+ifeq ($(N_THREADS),)
+	N_THREADS = 2
+endif
+
+ifeq ($(BLOCK_SIZE),)
+	BLOCK_SIZE = 20
+endif
+
+FLAGS= -fopenmp -DN_THREADS=$(N_THREADS) -DBLOCK_SIZE=$(BLOCK_SIZE)
 CC=g++
 	
 all: debug
