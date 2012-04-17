@@ -2,22 +2,49 @@
 #include <cstring>
 #include "palindrome.h"
 
+#ifdef PALINDROME_MAIN
 /**
- * Main (temporary).
+ * Main (used to count the average words size).
+ * @param argc
+ * @param argv
  * @return
  */
-int main()
+int main(int argc, char** argv)
 {
-	char word[10000000];
+	char word[10000];
+	
+	int count = 0;
+	int average = 0;
+	
+	while (scanf("%s", word) != EOF)
+	{
+		int size = strlen(word);
+		
+		count++;
+		average += size;
+	}
+	
+	printf("%d\n", average / count);
+	 
+	return 0;
+}
+#else
+/**
+ * Main (temporary for tests).
+ * @param argc
+ * @param argv
+ * @return
+ */
+int main(int argc, char** argv)
+{
+	char word[10000];
 	
 	while (scanf("%s", word) != EOF)
 	{
 		updatePalindromesCount(word, strlen(word), false);
 	}
-	
-	printf("%d\n", getWordsCount());
-	printf("%d\n", getPhrasesCount());
-	printf("%d\n", getPrimesCount());
 	 
 	return 0;
 }
+#endif
+
