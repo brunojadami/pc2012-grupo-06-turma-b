@@ -85,7 +85,8 @@ Para realizar o desenvolvimento da proposta, o projeto foi separado em três par
 
 \begin{lstlisting}[caption=Macro que paraleliza o algoritmo do palíndromo, float=h, label=macro1]
 #pragma omp parallel for num_threads(PALINDROME_N_THREADS) 
-	schedule(dynamic, PALINDROME_BLOCK_SIZE) reduction(+:sum) reduction(&&:palindrome)
+	schedule(dynamic, PALINDROME_BLOCK_SIZE) reduction(+:sum) 
+	reduction(&&:palindrome)
 \end{lstlisting}
 
 As definições PALINDROME\_N\_THREADS e PALINDROME\_BLOCK\_SIZE são passadas ao programa através do arquivo makefile. A primeira diz quantas threads serão utilizadas na paralelização do loop. A segunda, quantas iterações cada thread irá realizar. A palavra dynamic define que não haverá uma ordem na distribuição das iterações para os loops. Neste macro também estão definidas as reduções da soma e da validade do palíndromo.\\
@@ -93,22 +94,25 @@ As definições PALINDROME\_N\_THREADS e PALINDROME\_BLOCK\_SIZE são passadas a
 
 \begin{figure}[float=h]
 	\begin{center}
-		\scalebox{0.5}{\includegraphics{palindrome-small}}
+		\includegraphics[scale=0.5]{palindrome-small}
 	\end{center}
 	\caption{Resultados do algoritmo do palíndromo para o arquivo menor}
 	\label{palindrome-small}
 \end{figure}
 \begin{figure}[float=h]
 	\begin{center}
-		\scalebox{0.5}{\includegraphics{palindrome-big}}
+		\includegraphics[scale=0.5]{palindrome-big}
 	\end{center}
 	\caption{Resultados do algoritmo do palíndromo para o arquivo maior}
 	\label{palindrome-big}
 \end{figure}
 
-Os valores do números de threads e o tamanho do bloco que cada thread executará foram baseados em valores estimados. Um cálculo do tamanho médio das palavras provenientes da leitura cega apontou que para o arquivo menor, essa média valia 40 e para o maior, 4.
+Os valores do números de threads e o tamanho do bloco que cada thread executa foram baseados em valores estimados. Um cálculo do tamanho médio das palavras provenientes da leitura cega apontou que para o arquivo menor, essa média valia 40 e para o maior, 4.
 
 \newpage
-\section{Referências}
-
+\begin{thebibliography}{99}
+	\bibitem[OpenMP]{mp1}http://bisqwit.iki.fi/story/howto/openmp/
+	\bibitem[OpenMP]{mp2}http://openmp.org/wp/
+	\bibitem[Gnuplot]{gnuplot}http://www.duke.edu/~hpgavin/gnuplot.html
+\end{thebibliography}
 \end{document}
