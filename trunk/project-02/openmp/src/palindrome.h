@@ -2,8 +2,7 @@
 #define PALINDROME_H
 
 void updatePalindromesCount(char*, int, bool);
-int getWordsCount();
-int getPhrasesCount();
+int getPalindromesCount();
 int getPrimesCount();
 
 #endif
