@@ -2,19 +2,17 @@
 #include "palindrome.h"
 #include "crivo.h"
 
-// Words that are palindromes.
-int wordsCount = 0;
-// Phrases that are palindromes.
-int phrasesCount = 0;
+// Words that are palindromes (phrases included).
+int palindromesCount = 0;
 // Palindromes with the sum of characters that results on a prime number.
 int primesCount = 0;
 
 /**
- * @param word Word.
- * @param s Word size.
- * @param isPhrase If true, the word is a phrase instead. In this case, the prime numbers aren't updated.
+ * @param word Word or phrase.
+ * @param s Word or phrase size.
+ * @param updatePrimeCount If true, the prime numbers are updated.
  */
-void updatePalindromesCount(char* word, int s, bool isPhrase)
+void updatePalindromesCount(char* word, int s, bool updatePrimeCount)
 {
 	int i;
 	int sum = 0;
@@ -27,31 +25,16 @@ void updatePalindromesCount(char* word, int s, bool isPhrase)
 		palindrome &= word[i] == word[s - i - 1];
 	}
 	
-	if (isPhrase)
-	{
-		phrasesCount += palindrome ? 1 : 0;
-	}
-	else
-	{
-		wordsCount += palindrome ? 1 : 0;
-		primesCount += isPrime(sum) ? 1 : 0;
-	}
+	palindromesCount += palindrome ? 1 : 0;
+	primesCount += updatePrimeCount && isPrime(sum) ? 1 : 0;
 }
 
 /**
- * @return Number of words that are palindromes.
+ * @return Number of palindromes.
  */
-int getWordsCount()
+int getPalindromesCount()
 {
-	return wordsCount;
-}
-
-/**
- * @return Number of phrases that are palindromes.
- */
-int getPhrasesCount()
-{
-	return phrasesCount;
+	return palindromesCount;
 }
 
 /**
