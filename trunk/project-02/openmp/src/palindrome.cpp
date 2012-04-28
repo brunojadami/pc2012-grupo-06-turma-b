@@ -20,7 +20,7 @@ void updatePalindromesCount(char* word, int s, bool isPhrase)
 	int sum = 0;
 	bool palindrome = true;
 	
-	#pragma omp parallel for num_threads(N_THREADS) schedule(dynamic, BLOCK_SIZE) reduction(+:sum) reduction(&&:palindrome)
+	#pragma omp parallel for num_threads(PALINDROME_N_THREADS) schedule(dynamic, PALINDROME_BLOCK_SIZE) reduction(+:sum) reduction(&&:palindrome)
 	for (i = 0; i < s / 2; ++i)
 	{
 		sum += word[i] + word[s - i - 1];
