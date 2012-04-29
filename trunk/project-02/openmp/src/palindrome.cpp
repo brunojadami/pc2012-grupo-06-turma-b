@@ -1,6 +1,6 @@
 #include <omp.h>
 #include "palindrome.h"
-#include "crivo.h"
+#include "sieve.h"
 
 // Words that are palindromes (phrases included).
 int palindromesCount = 0;
