@@ -1,4 +1,4 @@
-#include "crivo.h"
+#include "sieve.h"
 
 /**
  * @param i Integer to be tested.

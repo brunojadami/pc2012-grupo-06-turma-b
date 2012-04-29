@@ -27,17 +27,17 @@ release: FLAGS += -s -O3
 debug: build
 release: build
 
-build: crivo palindrome parser main
-	$(CC) $(FLAGS) main.o crivo.o palindrome.o parser.o -o main
+build: sieve.o palindrome.o parser.o main.o
+	$(CC) $(FLAGS) main.o sieve.o palindrome.o parser.o -o main
 
-main: main.cpp
+main.o: main.cpp
 	$(CC) -c $(FLAGS) main.cpp
 
-crivo: crivo.cpp
-	$(CC) -c $(FLAGS) crivo.cpp
+sieve.o: sieve.cpp
+	$(CC) -c $(FLAGS) sieve.cpp
 	
-palindrome: palindrome.cpp
+palindrome.o: palindrome.cpp
 	$(CC) -c $(FLAGS) palindrome.cpp
 	
-parser: parser.cpp
+parser.o: parser.cpp
 	$(CC) -c $(FLAGS) parser.cpp
