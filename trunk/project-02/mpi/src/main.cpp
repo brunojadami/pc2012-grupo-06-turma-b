@@ -1,5 +1,7 @@
 #include <mpi.h>
 #include "comm.h"
+#include "palindrome.h"
+#include "sieve.h"
 
 void mainMaster();
 
@@ -26,11 +28,19 @@ int main(int argc, char** argv)
 	{
 		mainMaster();
 	}
-	if (rank == PALINDROME_MASTER_RANK)
+	else if (rank == SIEVE_MASTER_RANK)
+	{
+		sieveMaster();
+	}
+	else if (rank >= SIEVE_SLAVES_RANK_START && rank < SIEVE_SLAVES_RANK_START + SIEVE_SLAVES_COUNT)
+	{
+		sieveSlave();
+	}
+	else if (rank == PALINDROME_MASTER_RANK)
 	{
 		palindromeMaster();
 	}
-	else if (rank >= PALINDROME_SLAVE_RANK_START && rank <= PALINDROME_SLAVE_RANK_START + PALINDROME_SLAVES_COUNT)
+	else if (rank >= PALINDROME_SLAVES_RANK_START && rank < PALINDROME_SLAVES_RANK_START + PALINDROME_SLAVES_COUNT)
 	{
 		palindromeSlave();
 	}
@@ -61,8 +71,8 @@ void mainMaster()
 		
 		if (smallDone && bigDone)
 		{
-			MPI_send(buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_FINISH, MPI_COMM_WORLD);
-			MPI_send(buffer, 1, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_FINISH, MPI_COMM_WORLD);
+			MPI_Send(buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_FINISH, MPI_COMM_WORLD);
+			MPI_Send(buffer, 1, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_FINISH, MPI_COMM_WORLD);
 		}
 	}
 }
