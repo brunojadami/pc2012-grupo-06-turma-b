@@ -3,8 +3,10 @@ for ((threads = 2; threads <= 20; threads++))
 do
 	for ((size = 1; size <= 41; size += 5))
 	do
+		cd src
 		make -s PALINDROME_N_THREADS=$threads PALINDROME_BLOCK_SIZE=$size
-		/usr/bin/time -f "$threads $size %e" -o palindrome-small.points -a ./main < small.in
+		cd ..
+		/usr/bin/time -f "$threads $size %e" -o palindrome-small.points -a ./src/main < src/small.in
 		echo "Done (threads/size): $threads $size"
 	done
 done
