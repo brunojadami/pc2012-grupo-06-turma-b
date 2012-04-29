@@ -1,7 +1,9 @@
 #include <mpi.h>
+#include <cstdio>
 #include "comm.h"
 #include "palindrome.h"
 #include "sieve.h"
+#include "parser.h"
 
 void mainMaster();
 
@@ -22,6 +24,7 @@ int main(int argc, char** argv)
 		}
 		
 		MPI_Finalize();
+		return 0;
 	}
 	
 	if (rank == MAIN_MASTER_RANK)
@@ -44,7 +47,17 @@ int main(int argc, char** argv)
 	{
 		palindromeSlave();
 	}
+	else if (rank == PARSER_SMALL_RANK)
+	{
+		smallParser();
+	}
+	else if (rank == PARSER_BIG_RANK)
+	{
+		bigParser();
+	}
 
+	printf("Arrived: %d\n", rank);
+	
 	MPI_Finalize();
 	
 	return 0;
@@ -55,24 +68,30 @@ void mainMaster()
 	char buffer[1000];
 	MPI_Status status;
 	bool loop = true;
-	bool smallDone = false;
-	bool bigDone = false;
+	bool smallParserDone = false;
+	bool bigParserDone = false;
+	bool palindromeDone = false;
 	
 	while (loop)
 	{
 		MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		MPI_Recv(&buffer, status._count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		
-		if (status.MPI_TAG == TAG_FINISH)
+		if (status.MPI_TAG == TAG_PARSER_FINISHED && (status.MPI_SOURCE == PARSER_SMALL_RANK || status.MPI_SOURCE == PARSER_BIG_RANK))
 		{
-			smallDone = smallDone || status.MPI_SOURCE == PARSER_SMALL_RANK;
-			bigDone = bigDone || status.MPI_SOURCE == PARSER_BIG_RANK;
+			smallParserDone = smallParserDone || status.MPI_SOURCE == PARSER_SMALL_RANK;
+			bigParserDone = bigParserDone || status.MPI_SOURCE == PARSER_BIG_RANK;
 		}
 		
-		if (smallDone && bigDone)
+		if (smallParserDone && bigParserDone)
 		{
-			MPI_Send(buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_FINISH, MPI_COMM_WORLD);
-			MPI_Send(buffer, 1, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_FINISH, MPI_COMM_WORLD);
+			loop = false;
 		}
 	}
+	
+	MPI_Send(buffer, 1, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_KILL, MPI_COMM_WORLD);
+	MPI_Recv(&buffer, 1, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_PALINDROME_FINISHED, MPI_COMM_WORLD, &status);
+	
+	MPI_Send(buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_KILL, MPI_COMM_WORLD);
+	MPI_Recv(&buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_SIEVE_FINISHED, MPI_COMM_WORLD, &status);
 }

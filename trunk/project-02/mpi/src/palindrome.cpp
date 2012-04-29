@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include <cstdio>
 #include "palindrome.h"
 #include "comm.h"
 
@@ -18,7 +19,7 @@ void runPalindrome(char* word, int s, bool& palindrome, bool& prime)
 	sprintf(buffer, "%d", sum);
 	
 	MPI_Send(&buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_PRIME_QUESTION, MPI_COMM_WORLD);
-	MPI_Recv(&buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_PRIME_QUESTION, MPI_COMM_WORLD, &status);
+	MPI_Recv(&buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_PRIME_ANSWER, MPI_COMM_WORLD, &status);
 	
 	prime = buffer[0] == 1;
 }
@@ -38,18 +39,18 @@ void palindromeMaster()
 		MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		MPI_Recv(&buffer, status._count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		
-		if (status.MPI_SOURCE == MAIN_MASTER_RANK)
+		if (status.MPI_TAG == TAG_KILL && status.MPI_SOURCE == MAIN_MASTER_RANK)
 		{
 			finish = true;
 		}
-		else if (status.MPI_TAG == TAG_RUN_PALINDROME && status.MPI_SOURCE >= PALINDROME_SLAVES_RANK_START && status.MPI_SOURCE <
+		else if (status.MPI_TAG == TAG_PALINDROME_DONE && status.MPI_SOURCE >= PALINDROME_SLAVES_RANK_START && status.MPI_SOURCE <
 			PALINDROME_SLAVES_RANK_START + PALINDROME_SLAVES_COUNT)
 		{
 			palindromesCount += buffer[0];
 			primesCount += buffer[1];
 			slavesRunning--;
 		}
-		else if (status.MPI_TAG == TAG_RUN_PALINDROME)
+		else if (status.MPI_TAG == TAG_RUN_PALINDROME && (status.MPI_SOURCE == PARSER_SMALL_RANK || status.MPI_SOURCE == PARSER_BIG_RANK))
 		{
 			buffer[0] = status.MPI_SOURCE == PARSER_BIG_RANK ? 1 : 0;
 			
@@ -61,8 +62,10 @@ void palindromeMaster()
 	
 	for (int i = PALINDROME_SLAVES_RANK_START; i < PALINDROME_SLAVES_RANK_START + PALINDROME_SLAVES_COUNT; ++i)
 	{
-		MPI_Send(buffer, 1, MPI_CHAR, i, TAG_FINISH, MPI_COMM_WORLD);
+		MPI_Send(buffer, 1, MPI_CHAR, i, TAG_KILL, MPI_COMM_WORLD);
 	}
+	
+	MPI_Send(buffer, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_PALINDROME_FINISHED, MPI_COMM_WORLD);
 }
 
 void palindromeSlave()
@@ -76,7 +79,7 @@ void palindromeSlave()
 		MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		MPI_Recv(&buffer, status._count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		
-		if (status.MPI_SOURCE == PALINDROME_MASTER_RANK && status.MPI_TAG == TAG_RUN_PALINDROME)
+		if (status.MPI_TAG == TAG_RUN_PALINDROME && status.MPI_SOURCE == PALINDROME_MASTER_RANK)
 		{
 			bool palindrome, prime, updatePrime;
 			updatePrime = buffer[0] == 1;
@@ -84,9 +87,9 @@ void palindromeSlave()
 			runPalindrome(buffer, status._count, palindrome, prime);
 			buffer[0] = palindrome ? 1 : 0;
 			buffer[1] = updatePrime && prime ? 1 : 0;
-			MPI_Send(buffer, 2, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_RUN_PALINDROME, MPI_COMM_WORLD);
+			MPI_Send(buffer, 2, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_PALINDROME_DONE, MPI_COMM_WORLD);
 		}
-		else if (status.MPI_SOURCE == PALINDROME_MASTER_RANK && status.MPI_TAG == TAG_FINISH)
+		else if (status.MPI_TAG == TAG_KILL && status.MPI_SOURCE == PALINDROME_MASTER_RANK )
 		{
 			finish = true;
 		}
