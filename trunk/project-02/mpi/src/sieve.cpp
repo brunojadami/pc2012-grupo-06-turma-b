@@ -78,17 +78,23 @@ void sieveMaster()
 			int source = status.MPI_SOURCE;
 			int i = atoi(buffer);
 			int t = (i-1)/block;
-			MPI_Send(&res, 1, MPI_CHAR, SIEVE_SLAVES_RANK_START+t, 0, MPI_COMM_WORLD);
-			MPI_Send(&i, 1, MPI_INT, SIEVE_SLAVES_RANK_START+t, 0, MPI_COMM_WORLD);
-			MPI_Recv(&res, 1, MPI_CHAR, SIEVE_SLAVES_RANK_START+t, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			if (t < SIEVE_SLAVES_COUNT)
+			{
+				MPI_Send(&res, 1, MPI_CHAR, SIEVE_SLAVES_RANK_START+t, 0, MPI_COMM_WORLD);
+				MPI_Send(&i, 1, MPI_INT, SIEVE_SLAVES_RANK_START+t, 0, MPI_COMM_WORLD);
+				MPI_Recv(&res, 1, MPI_CHAR, SIEVE_SLAVES_RANK_START+t, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			}
+			else printf("Invalid prime number! Too big %d\n", i);
 			buffer[0] = res;
 			MPI_Send(buffer, 1, MPI_CHAR, source, TAG_PRIME_ANSWER, MPI_COMM_WORLD);
 		}
 	}
 	
 	res = 2;
-	//printf("finish him!\n");
+	printf("finish him!\n");
 	broadcast(&res, 1);
+	
+	MPI_Send(&res, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_SIEVE_FINISHED, MPI_COMM_WORLD);
 }
 
 void sieveSlave()
@@ -140,13 +146,13 @@ void sieveSlave()
 		}
 	}
 	
-	/*int cnt = 0;
+	int cnt = 0;
 	for (int i = start%2==0; i < block; i += 2)
 	{
 		//if (!comp[i]) printf("%d prime\n", i+start);
 		cnt += !comp[i];
 	}
-	printf("got %d primes on %d\n", cnt, rank);*/
+	printf("got %d primes on %d\n", cnt, rank);
 }
 
 /*int main (int argc, char *argv[])
