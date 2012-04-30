@@ -4,7 +4,7 @@
 #include <cmath>
 #include <omp.h>
 
-const int MAX = 1000000; // MAX is the last number
+const int MAX = PRIME_MAX; // MAX is the last number
 bool comp[(MAX>>1)+1];
 
 /**
