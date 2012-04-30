@@ -5,8 +5,14 @@
 #include "sieve.h"
 #include "parser.h"
 
+/**
+ * Main master.
+ */
 void mainMaster();
 
+/**
+ * Main.
+ */
 int main(int argc, char** argv) 
 {
 	int rank, procs;
@@ -41,7 +47,9 @@ int main(int argc, char** argv)
 	}
 	else if (rank == PALINDROME_MASTER_RANK)
 	{
-		palindromeMaster();
+		int palindromesCount, primesCount;
+		palindromeMaster(palindromesCount, primesCount);
+		printf("Number of palindromes: %d\nNumber of primes: %d\n", palindromesCount, primesCount);
 	}
 	else if (rank >= PALINDROME_SLAVES_RANK_START && rank < PALINDROME_SLAVES_RANK_START + PALINDROME_SLAVES_COUNT)
 	{
@@ -55,14 +63,15 @@ int main(int argc, char** argv)
 	{
 		bigParser();
 	}
-
-	printf("Arrived: %d\n", rank);
 	
 	MPI_Finalize();
 	
 	return 0;
 }
 
+/**
+ * Main master.
+ */
 void mainMaster()
 {
 	char buffer[1000];
@@ -89,9 +98,12 @@ void mainMaster()
 		}
 	}
 	
+	// Sends the kill message to the palindrome master and waits it finalize.
+	// The sieve master must be shutted down later because the palindrome slaves may be running and needing it.
 	MPI_Send(buffer, 1, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_KILL, MPI_COMM_WORLD);
 	MPI_Recv(&buffer, 1, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_PALINDROME_FINISHED, MPI_COMM_WORLD, &status);
 	
+	// Sends the kill message to the sieve master and waits it finalize.
 	MPI_Send(buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_KILL, MPI_COMM_WORLD);
 	MPI_Recv(&buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_SIEVE_FINISHED, MPI_COMM_WORLD, &status);
 }

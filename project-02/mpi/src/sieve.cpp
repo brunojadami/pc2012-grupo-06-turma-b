@@ -2,6 +2,9 @@
 #include "sieve.h"
 #include "comm.h"
 
+/**
+ * Sieve master.
+ */
 void sieveMaster()
 {
 	char buffer[1000];
@@ -20,7 +23,9 @@ void sieveMaster()
 		else if (status.MPI_TAG == TAG_PRIME_QUESTION && status.MPI_SOURCE >= PALINDROME_SLAVES_RANK_START && status.MPI_SOURCE <
 			PALINDROME_SLAVES_RANK_START + PALINDROME_SLAVES_COUNT)
 		{
+			// The first char of the buffer answers the primality. 1 means it is prime, 0 means not.
 			buffer[0] = 1;
+			
 			MPI_Send(buffer, 1, MPI_CHAR, status.MPI_SOURCE, TAG_PRIME_ANSWER, MPI_COMM_WORLD);
 		}
 	}
@@ -33,6 +38,9 @@ void sieveMaster()
 	MPI_Send(buffer, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_SIEVE_FINISHED, MPI_COMM_WORLD);
 }
 
+/**
+ * Sieve slave.
+ */
 void sieveSlave()
 {
 	char buffer[1000];
