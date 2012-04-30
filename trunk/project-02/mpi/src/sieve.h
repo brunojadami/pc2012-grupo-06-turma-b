@@ -1,7 +1,7 @@
 #ifndef SIEVE_H
 #define SIEVE_H
 
-void sieveMaster();
-void sieveSlave();
+void sieveMaster(int);
+void sieveSlave(int, int);
 
 #endif
