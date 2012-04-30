@@ -91,24 +91,19 @@ Para realizar o desenvolvimento da proposta, o projeto foi separado em três par
 
 As definições PALINDROME\_N\_THREADS e PALINDROME\_BLOCK\_SIZE são passadas ao programa através do arquivo makefile. A primeira diz quantas threads serão utilizadas na paralelização do loop. A segunda, quantas iterações cada thread irá realizar. A palavra dynamic define que não haverá uma ordem na distribuição das iterações para os loops. Neste macro também estão definidas as reduções da soma para verificar a primalidade e da validade do palíndromo.\\
 \indent Alguns testes foram aplicados isoladamente do resto do sistema para testar a performance do algoritmo e suas diferentes configurações. Uma leitura cega foi feita dos dois arquivos de entrada e os resultados obtidos estão presentes na figura~\ref{palindrome-small} e na figura~\ref{palindrome-big}.\\
-
-\begin{figure}[float=h]
-	\begin{center}
-		\includegraphics[scale=0.5]{palindrome-small}
-	\end{center}
+\begin{figure}
+	\includegraphics[scale=0.5]{palindrome-small}
 	\caption{Resultados do algoritmo do palíndromo para o arquivo menor}
 	\label{palindrome-small}
 \end{figure}
-\begin{figure}[float=h]
-	\begin{center}
-		\includegraphics[scale=0.5]{palindrome-big}
-	\end{center}
+\begin{figure}
+	\includegraphics[scale=0.5]{palindrome-big}
 	\caption{Resultados do algoritmo do palíndromo para o arquivo maior}
 	\label{palindrome-big}
 \end{figure}
+\indent Os valores do números de threads e o tamanho do bloco que cada thread executa foram baseados em valores estimados. Um cálculo do tamanho médio das palavras provenientes da leitura cega apontou que para o arquivo menor, essa média valia 40 e para o maior, 4.
 
-Os valores do números de threads e o tamanho do bloco que cada thread executa foram baseados em valores estimados. Um cálculo do tamanho médio das palavras provenientes da leitura cega apontou que para o arquivo menor, essa média valia 40 e para o maior, 4.
-
+\newpage
 \begin{thebibliography}{99}
 	\bibitem[OpenMP]{mp1}http://bisqwit.iki.fi/story/howto/openmp/
 	\bibitem[OpenMP]{mp2}http://openmp.org/wp/

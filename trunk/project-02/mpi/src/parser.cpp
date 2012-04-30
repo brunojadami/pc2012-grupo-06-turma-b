@@ -3,6 +3,9 @@
 #include "parser.h"
 #include "comm.h"
 
+/**
+ * Big parser.
+ */
 void bigParser()
 {
 	char buffer[1000];
@@ -16,6 +19,9 @@ void bigParser()
 	MPI_Send(buffer, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_PARSER_FINISHED, MPI_COMM_WORLD);
 }
 
+/**
+ * Small parser.
+ */
 void smallParser()
 {
 	char buffer[1000];
