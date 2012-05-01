@@ -79,8 +79,7 @@ Para realizar o desenvolvimento da proposta, o projeto foi separado em três par
 \section{O projeto OpenMP}
 \indent \indent Neste projeto, a paralelização do código foi feita nos loops do programa através das chamadas dos macros da biblioteca. O programa segue um fluxo contínuo e possui blocos de código executados em paralelo. Inicialmente, o cálculo do crivo é feito. Após esse passo, os arquivos são lidos e as palavras lidas são entregues ao verificador de palíndromos.
 
-\subsection{O parser}
-
+\subsection{Execução do parser}
 \indent \indent TODO.
 
 \subsection{Cálculo dos palíndromos}
@@ -104,21 +103,31 @@ As definições PALINDROME\_N\_THREADS e PALINDROME\_BLOCK\_SIZE são passadas a
 \end{figure}
 \indent Os valores do números de threads e o tamanho do bloco que cada thread executa foram baseados em valores estimados. Um cálculo do tamanho médio das palavras provenientes da leitura cega apontou que para o arquivo menor, essa média valia 40 e para o maior, 4.
 
-\subsection{O algoritmo do crivo}
-
+\subsection{Cálculo do crivo}
 \indent \indent TODO.
 
 \section{O projeto MPI}
-\indent \indent O projeto MPI foi desenvolvido seguindo a estrutura da figura~\ref{mpi}. Todos os processos do programa têm suas chamadas principais executadas no início do programa. Existem três tipos de processos.\\
-\indent O primeiro é o processo principal, também chamado de mestre principal. O mestre principal é responsável por controlar os processos do segundo tipo, chamados de processos mestres. Ele é responsável por parar os processos. Há quatro processos do segundo tipo, o mestre crivo, o mestre palíndromo e os mestres parser maior e menor.\\
-\indent Os mestres parser maior e menor são os processos responsáveis pela leitura dos arquivos. Neste projeto, diferentemente do projeto OpenMP, ambos os arquivos são processados em uma só execução. Cada mestre desse tipo lê um arquivo e manda mensagens ao mestre palíndromo para que ele execute seu papel de encontrar palíndromos e números primos. TODO: falar mais.\\
-\indent O mestre palíndromo coordena vários processos escravos designados a ele, os escravos palíndromos, que são do terceiro tipo. Basicamente, o mestre ordena que seus escravos executem requisições dos parsers e ele armazena as respostas para fornecê-las no final da execução.\\
-\indent TODO: falar do mestre crivo.\\
+\indent \indent O projeto MPI foi desenvolvido seguindo a estrutura da figura~\ref{mpi}. Todos os processos do programa têm suas chamadas principais executadas no início do programa. Existem três tipos de processos:
+\begin{itemize}
+	\item Processos mestre principal.
+	\item Processos mestres secundários.
+	\item Processos escravos.
+\end{itemize}
 \begin{figure}
 	\includegraphics[scale=0.5]{mpi}
 	\caption{A estrutura do projeto MPI}
 	\label{mpi}
 \end{figure}
+\indent \indent O mestre principal é responsável por controlar os processos do segundo tipo, chamados de processos mestres. Ele envia mensagens de término para esses processos e recebe informações de término ao final da execução.
+
+\subsection{Execução do parser}
+\indent \indent TODO.
+
+\subsection{Cálculo dos palíndromos}
+\indent \indent TODO.
+
+\subsection{Cálculo do crivo}
+\indent \indent TODO.
 
 \newpage
 \begin{thebibliography}{99}
