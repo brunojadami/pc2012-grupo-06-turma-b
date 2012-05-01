@@ -75,9 +75,15 @@ Lucas Lobosque\\
 	\item Leitura dos arquivos de entrada.
 	\item Cálculo dos palíndromos.
 \end{itemize}
+\indent \indent Todas as execuções citadas no documento, responsáveis pela geração dos gráficos, foram executados no cluster disponível.
 
 \section{O projeto OMP}
-\indent \indent Neste projeto, a paralelização do código foi feita nos loops do programa através das chamadas dos macros da biblioteca. O programa segue um fluxo contínuo e possui blocos de código executados em paralelo. Inicialmente, o cálculo do crivo é feito. Após esse passo, os arquivos são lidos e as palavras lidas são entregues ao verificador de palíndromos.
+\indent \indent Neste projeto, a paralelização do código foi feita nos loops do programa através das chamadas dos macros da biblioteca. O programa segue um fluxo contínuo e possui blocos de código executados em paralelo. Inicialmente, o cálculo do crivo é feito. Após esse passo, os arquivos são lidos e as palavras lidas são entregues ao verificador de palíndromos. A execução do programa e seus resultados apresentam-se na figura~\ref{graph-omp}.
+\begin{figure}[float=p]
+	\includegraphics[scale=0.5]{graph-omp}
+	\caption{Resultados da execução do projeto MPI}
+	\label{graph-omp}
+\end{figure}
 
 \subsection{Execução do parser}
 \indent \indent TODO.
@@ -91,12 +97,12 @@ Lucas Lobosque\\
 \end{lstlisting}
 As definições PALINDROME\_N\_THREADS e PALINDROME\_BLOCK\_SIZE são passadas ao programa através do arquivo makefile. A primeira diz quantas threads serão utilizadas na paralelização do loop. A segunda, quantas iterações cada thread irá realizar. A palavra dynamic define que não haverá uma ordem na distribuição das iterações para os loops. Neste macro também estão definidas as reduções da soma para verificar a primalidade e da validade do palíndromo.\\
 \indent Alguns testes foram aplicados isoladamente do resto do sistema para testar a performance do algoritmo e suas diferentes configurações. Uma leitura cega foi feita dos dois arquivos de entrada e os resultados obtidos estão presentes na figura~\ref{graph-palindrome-small} e na figura~\ref{graph-palindrome-big}.
-\begin{figure}
+\begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-palindrome-small}
 	\caption{Resultados do algoritmo do palíndromo para o arquivo menor}
 	\label{graph-palindrome-small}
 \end{figure}
-\begin{figure}
+\begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-palindrome-big}
 	\caption{Resultados do algoritmo do palíndromo para o arquivo maior}
 	\label{graph-palindrome-big}
@@ -107,9 +113,9 @@ Os valores do números de threads e o tamanho do bloco que cada thread executa f
 \indent \indent O crivo de Eratóstenes é um algoritmo e um método simples e prático para encontrar números primos até um certo valor limite. Segundo a tradição, foi criado pelo matemático grego Eratóstenes (c. 285-194 a.C.), o terceiro bibliotecário-chefe da biblioteca de Alexandria.\\
 \indent O algoritmo se baseia em marcar os múltiplos dos primos encontrados até agora. Os números não marcados serão os números primos. Deve-se iterar do número 2 em diante até a raíz do maior número que se deseja calcular. A complexidade do algoritmo é \begin{math}O(n\log(\log n))\end{math}.\\
 \indent Na implementação deste trabalho os números pares são ignorados para otimizar um pouco o método. A função isPrime testa se o número par é primo ou não. No caso, apenas o 2 será. Se o número for ímpar, esta função irá checar o vetor de marcação dos múltiplos.\\
-\indent A decomposição utilizada foi a recursiva, pois foi paralelizada a demarcação dos mútiplos dos números primos, onde cada thread fica responsável por um trecho do vetor dos múltiplos. A implementação em OMP paraleliza a parte que faz a marcação dos múltiplos do primo encontrado. No fim para saber se o número é primo ou não, basta apenas checar o vetor de marcação dos múltiplos.\\
+\indent A decomposição utilizada foi a de dados, pois foi paralelizada a demarcação dos mútiplos dos números primos, onde cada thread fica responsável por um trecho do vetor dos múltiplos. A implementação em OMP paraleliza a parte que faz a marcação dos múltiplos do primo encontrado. No fim para saber se o número é primo ou não, basta apenas checar o vetor de marcação dos múltiplos.\\
 \indent Testes de performance foram aplicados isoladamente do resto do programa. Os resultados obtidos encontram-se na figura~\ref{graph-sieve-omp}.
-\begin{figure}
+\begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-sieve-omp}
 	\caption{Tempos de execução do crivo usando OMP}
 	\label{graph-sieve-omp}
@@ -122,13 +128,13 @@ Os valores do números de threads e o tamanho do bloco que cada thread executa f
 	\item Processos mestres secundários.
 	\item Processos escravos.
 \end{itemize}
-\begin{figure}
+\begin{figure}[float=p]
 	\includegraphics[scale=0.5]{pic-mpi}
 	\caption{A estrutura do projeto MPI}
 	\label{pic-mpi}
 \end{figure}
 \indent \indent Há somente um processo mestre principal. O mestre principal é responsável por controlar os processos do segundo tipo, os processos mestres secundários. Ele envia mensagens de finalização para esses processos e recebe informações de término ao final da execução deles. Neste projeto, todo o sistema foi testado em conjunto. Várias configurações de números de escravos foram utilizadas. Os resultado obtidos encontram-se na figura~\ref{graph-mpi}.
-\begin{figure}
+\begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-mpi}
 	\caption{Resultados da execução do projeto MPI}
 	\label{graph-mpi}
@@ -143,7 +149,7 @@ Os valores do números de threads e o tamanho do bloco que cada thread executa f
 \subsection{Cálculo do crivo}
 \indent \indent O algoritmo para o cálculo é análogo para o projeto OMP. O cálculo aqui também paraleliza a marcação dos mútiplos dos primos. O processo meste itera os números de 2 até a raiz do maior número e requisita ao processos escravos que demarquem os múltiplos dos primos. Para encontrar se um número é primo, o processo mestre faz uma requisição ao escravo que contém o intervalo do número requisitado. O escravo então responde ao processo mestre que responde ao processo que fez a pergunta se o número é primo ou não. A decomposição é a de dados, pelas mesmas razões citadas no projeto OMP.\\
 \indent Assim como anteriormente, testes de performance foram aplicados isoladamente do resto do programa. Os tempos obtidos encontram-se na figura~\ref{graph-sieve-mpi}.
-\begin{figure}
+\begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-sieve-mpi}
 	\caption{Tempos de execução do crivo usando MPI}
 	\label{graph-sieve-mpi}
