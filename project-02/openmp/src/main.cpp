@@ -1,10 +1,12 @@
 #include <cstdio>
 #include <cstring>
 #include "palindrome.h"
+#include "sieve.h"
+#include "parser.h"
 
 #ifdef PALINDROME_MAIN
 /**
- * Main (used to count the average words size).
+ * Main.
  * @param argc
  * @param argv
  * @return
@@ -13,24 +15,31 @@ int main(int argc, char** argv)
 {
 	char word[10000];
 	
-	int count = 0;
-	int average = 0;
-	
 	while (scanf("%s", word) != EOF)
 	{
-		int size = strlen(word);
-		
-		count++;
-		average += size;
+		updatePalindromesCount(word, strlen(word), false);
 	}
-	
-	printf("%d\n", average / count);
 	 
 	return 0;
 }
-#else
+#endif
+#ifdef SIEVE_MAIN
 /**
- * Main (temporary for tests).
+ * Main.
+ * @param argc
+ * @param argv
+ * @return
+ */
+int main(int argc, char** argv)
+{
+	sieve();
+	 
+	return 0;
+}
+#endif
+#ifdef MAIN
+/**
+ * Main.
  * @param argc
  * @param argv
  * @return

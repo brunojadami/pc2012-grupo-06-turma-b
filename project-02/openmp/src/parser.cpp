@@ -5,8 +5,8 @@
 
 using namespace std;
 
-
-int isPunct(char c) {
+int isPunct(char c) 
+{
 	string punctuation = "\";,.:!?'()[]{}-*";
 	if (punctuation.find(c, 0) != -1) return 1;
 	return 0;
@@ -51,12 +51,5 @@ void readBig()
 		cout << s << endl;
 
 	}
-}
-
-
-int main() {
-	readSmall();
-	readBig();
-	return 0;
 }
 
