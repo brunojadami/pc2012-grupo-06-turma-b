@@ -28,7 +28,7 @@ void sieve()
                 if (!comp[i>>1]) 
                 {
                 	int k = i<<1;
-                	#pragma omp parallel for 
+                	#pragma omp parallel for num_threads(SIEVE_THREADS)
                         for (int j = i*i; j <= MAX; j += k) 
                         {
                                 comp[j>>1] = 1;
