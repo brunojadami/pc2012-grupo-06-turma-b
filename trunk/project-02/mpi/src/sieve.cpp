@@ -49,8 +49,6 @@ void sieveMaster()
 		MPI_Send(&i, 1, MPI_INT, SIEVE_SLAVES_RANK_START+t, 0, MPI_COMM_WORLD);
 		MPI_Recv(&res, 1, MPI_CHAR, SIEVE_SLAVES_RANK_START+t, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		
-		//printf("%d is %d\n", i, res);
-		
 		if (res) continue;
 		
 		res = 1;
@@ -91,12 +89,14 @@ void sieveMaster()
 	}
 	
 	res = 2;
-	printf("finish him!\n");
 	broadcast(&res, 1);
 	
 	MPI_Send(&res, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_SIEVE_FINISHED, MPI_COMM_WORLD);
 }
 
+/**
+ * Sieve slave.
+ */
 void sieveSlave()
 {
 	int rank;
@@ -111,7 +111,7 @@ void sieveSlave()
 	rank++;
 	int start = (rank-1)*block+1, end = rank*block;
 	if (start == 1) comp[0] = 1;
-	//printf("start %d end %d rank %d\n", start, end, rank);
+
 	MPI_Status status;
 	
 	while (1)
@@ -119,20 +119,20 @@ void sieveSlave()
 		char opt;
 		int i;
 		MPI_Recv(&opt, 1, MPI_CHAR, SIEVE_MASTER_RANK, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-		//printf("%d received %d\n", rank, opt);
+
 		if (opt == 2) break;
 		
 		if (opt == 0)
 		{
 			MPI_Recv(&i, 1, MPI_INT, SIEVE_MASTER_RANK, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			//printf("data is %d\n", i);
+
 			opt = comp[(i-1)%block];
 			MPI_Send(&opt, 1, MPI_CHAR, SIEVE_MASTER_RANK, 0, MPI_COMM_WORLD);
 		}
 		else if (opt == 1)
 		{
 			MPI_Recv(&i, 1, MPI_INT, SIEVE_MASTER_RANK, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			//printf("%d comp %d\n", rank, i);
+
 			int j = i*i;
 			int z = start/i*i;
 			if (z < start) z += i;
@@ -140,7 +140,6 @@ void sieveSlave()
 			if (z%2 == 0) z += i;
 			for (z = max(j, z); z <= end; z += k)
 			{
-				//printf("comp %d\n", z);
 				comp[(z-1)%block] = 1;
 			}
 		}
@@ -149,26 +148,7 @@ void sieveSlave()
 	int cnt = 0;
 	for (int i = start%2==0; i < block; i += 2)
 	{
-		//if (!comp[i]) printf("%d prime\n", i+start);
 		cnt += !comp[i];
 	}
-	printf("got %d primes on %d\n", cnt, rank);
 }
-
-/*int main (int argc, char *argv[])
-{
-	int rank, size;
-
-	MPI_Init (&argc, &argv);	
-	MPI_Comm_rank (MPI_COMM_WORLD, &rank);	
-	MPI_Comm_size (MPI_COMM_WORLD, &size);	
-	
-	if (rank == 0)
-		master(size);
-	else
-		slave(rank, size);
-	
-	MPI_Finalize();
-	return 0;
-}*/
 

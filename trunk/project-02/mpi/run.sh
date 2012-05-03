@@ -4,6 +4,7 @@ do
 	for ((palindromeSlavesCount = 2; palindromeSlavesCount <= 8; palindromeSlavesCount++))
 	do
 		cd src
+		make -s clean
 		make -s SIEVE_SLAVES_COUNT=$sieveSlavesCount PALINDROME_SLAVES_COUNT=$palindromeSlavesCount
 		cd ..
 		threads=$[5 + $sieveSlavesCount + $palindromeSlavesCount]
