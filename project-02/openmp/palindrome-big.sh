@@ -5,9 +5,9 @@ do
 	do
 		cd src
 		make -s clean
-		make PALINDROME_N_THREADS=$threads PALINDROME_BLOCK_SIZE=$size PALINDROME_MAIN=1
+		make -s PALINDROME_N_THREADS=$threads PALINDROME_BLOCK_SIZE=$size PALINDROME_MAIN=1
 		cd ..
-		/usr/bin/time -f "$threads $size %e" -o palindrome-small.points -a ./src/main < src/small.in
+		/usr/bin/time -f "$threads $size %e" -o palindrome-big.points -a ./src/main < src/big.in
 		echo "Done (threads/size): $threads $size"
 	done
 done

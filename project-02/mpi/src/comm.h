@@ -21,6 +21,6 @@
 #define TAG_RUN_PALINDROME 		7
 #define TAG_KILL 			8
 
-#define PRIME_MAX			100
+#define PRIME_MAX			1000000
 
 #endif

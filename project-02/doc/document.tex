@@ -77,7 +77,7 @@ Lucas Lobosque\\
 \end{itemize}
 \indent \indent Todas as execuções citadas no documento, responsáveis pela geração dos gráficos, foram executados no cluster disponível.
 
-\section{O projeto OMP}
+\section{O projeto OpenMP}
 \indent \indent Neste projeto, a paralelização do código foi feita nos loops do programa através das chamadas dos macros da biblioteca. O programa segue um fluxo contínuo e possui blocos de código executados em paralelo. Inicialmente, o cálculo do crivo é feito. Após esse passo, os arquivos são lidos e as palavras lidas são entregues ao verificador de palíndromos. A execução do programa e seus resultados apresentam-se na figura~\ref{graph-omp}.
 \begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-omp}
@@ -89,13 +89,13 @@ Lucas Lobosque\\
 \indent \indent TODO.
 
 \subsection{Cálculo dos palíndromos}
-\indent \indent O algoritmo de cálculo dos palíndromos é simples. Sua complexidade é \begin{math}O(n)\end{math}, pois baseia-se em apenas um loop para verificar a palavra. Além disso, ele já soma os valores ASCII dos caracteres para responder se a soma total é um número primo. Para a paralelização do algoritmo, o macro citado no código~\ref{code-macro1} foi utilizado. Neste passo, a decomposição de dados foi utilizada. O vetor que contém a palavra é dividido em sessões que serão computadas pela OMP através da chamada do macro. Cada partição executa o loop com suas iterações correspondentes em paralelo.
-\begin{lstlisting}[caption=Macro que paraleliza o algoritmo do palíndromo, float=h, label=code-macro1]
+\indent \indent O algoritmo de cálculo dos palíndromos é simples. Sua complexidade é \begin{math}O(n)\end{math}, pois baseia-se em apenas um loop para verificar a palavra. Além disso, ele já soma os valores ASCII dos caracteres para responder se a soma total é um número primo. Para a paralelização do algoritmo, o macro citado no código~\ref{code-macro1} foi utilizado. Neste passo, a decomposição de dados foi utilizada. O vetor que contém a palavra é dividido em sessões que serão computadas pela OpenMP através da chamada do macro. Cada partição executa o loop com suas iterações correspondentes em paralelo.
+\begin{lstlisting}[caption=Macro que paraleliza o algoritmo do palíndromo, label=code-macro1]
 #pragma omp parallel for num_threads(PALINDROME_N_THREADS) 
 	schedule(dynamic, PALINDROME_BLOCK_SIZE) reduction(+:sum) 
 	reduction(&&:palindrome)
 \end{lstlisting}
-As definições PALINDROME\_N\_THREADS e PALINDROME\_BLOCK\_SIZE são passadas ao programa através do arquivo makefile. A primeira diz quantas threads serão utilizadas na paralelização do loop. A segunda, quantas iterações cada thread irá realizar. A palavra dynamic define que não haverá uma ordem na distribuição das iterações para os loops. Neste macro também estão definidas as reduções da soma para verificar a primalidade e da validade do palíndromo.\\
+\indent \indent As definições PALINDROME\_N\_THREADS e PALINDROME\_BLOCK\_SIZE são passadas ao programa através do arquivo makefile. A primeira diz quantas threads serão utilizadas na paralelização do loop. A segunda, quantas iterações cada thread irá realizar. A palavra dynamic define que não haverá uma ordem na distribuição das iterações para os loops. Neste macro também estão definidas as reduções da soma para verificar a primalidade e da validade do palíndromo.\\
 \indent Alguns testes foram aplicados isoladamente do resto do sistema para testar a performance do algoritmo e suas diferentes configurações. Uma leitura cega foi feita dos dois arquivos de entrada e os resultados obtidos estão presentes na figura~\ref{graph-palindrome-small} e na figura~\ref{graph-palindrome-big}.
 \begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-palindrome-small}
@@ -113,11 +113,14 @@ Os valores do números de threads e o tamanho do bloco que cada thread executa f
 \indent \indent O crivo de Eratóstenes é um algoritmo e um método simples e prático para encontrar números primos até um certo valor limite. Segundo a tradição, foi criado pelo matemático grego Eratóstenes (c. 285-194 a.C.), o terceiro bibliotecário-chefe da biblioteca de Alexandria.\\
 \indent O algoritmo se baseia em marcar os múltiplos dos primos encontrados até agora. Os números não marcados serão os números primos. Deve-se iterar do número 2 em diante até a raíz do maior número que se deseja calcular. A complexidade do algoritmo é \begin{math}O(n\log(\log n))\end{math}.\\
 \indent Na implementação deste trabalho os números pares são ignorados para otimizar um pouco o método. A função isPrime testa se o número par é primo ou não. No caso, apenas o 2 será. Se o número for ímpar, esta função irá checar o vetor de marcação dos múltiplos.\\
-\indent A decomposição utilizada foi a de dados, pois foi paralelizada a demarcação dos mútiplos dos números primos, onde cada thread fica responsável por um trecho do vetor dos múltiplos. A implementação em OMP paraleliza a parte que faz a marcação dos múltiplos do primo encontrado. No fim para saber se o número é primo ou não, basta apenas checar o vetor de marcação dos múltiplos.\\
-\indent Testes de performance foram aplicados isoladamente do resto do programa. Os resultados obtidos encontram-se na figura~\ref{graph-sieve-omp}.
+\indent A decomposição utilizada foi a de dados, pois foi paralelizada a demarcação dos mútiplos dos números primos, onde cada thread fica responsável por um trecho do vetor dos múltiplos. Para isso usou-se o código~\ref{code-macro2}, que separa o for em vários blocos, o número de blocos é determinado pelo macro SIEVE\_N\_THREADS. A implementação em OpenMP paraleliza a parte que faz a marcação dos múltiplos do primo encontrado. No fim para saber se o número é primo ou não, basta apenas checar o vetor de marcação dos múltiplos.
+\begin{lstlisting}[caption=Macro que paraleliza o algoritmo do palíndromo, label=code-macro2]
+#pragma omp parallel for num_threads(SIEVE_N_THREADS)
+\end{lstlisting}
+\indent \indent Testes de performance foram aplicados isoladamente do resto do programa. Os resultados obtidos encontram-se na figura~\ref{graph-sieve-omp}.
 \begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-sieve-omp}
-	\caption{Tempos de execução do crivo usando OMP}
+	\caption{Tempos de execução do crivo usando OpenMP}
 	\label{graph-sieve-omp}
 \end{figure}
 
@@ -144,10 +147,10 @@ Os valores do números de threads e o tamanho do bloco que cada thread executa f
 \indent \indent TODO.
 
 \subsection{Cálculo dos palíndromos}
-\indent \indent O algoritmo para o cálculo é o mesmo utilizado para o projeto OMP. Há um processo mestre que coordena os processos escravos. Ao receber uma palavra, o processo mestre envia a mensagem ao próximo escravo da fila (uma file round-robin) e o escravo executa o algoritmo do palíndromo, enviando ao mestre o resultado. Aqui, a decomposição pode ser vista como uma decomposição pseudo-especulativa. Na verdade, cada requisição pode ser executada paralelamente, independentemente de qualquer fator, funcionando como filas paralelas de execução de trabalho. A tomada de decisão, que é característica dessa decomposição não existe. O mestre apenas tem que saber qual o próximo escravo a receber uma palavra.
+\indent \indent O algoritmo para o cálculo é o mesmo utilizado para o projeto OpenMP. Há um processo mestre que coordena os processos escravos. Ao receber uma palavra, o processo mestre envia a mensagem ao próximo escravo da fila (uma file round-robin) e o escravo executa o algoritmo do palíndromo, enviando ao mestre o resultado. Aqui, a decomposição pode ser vista como uma decomposição pseudo-especulativa. Na verdade, cada requisição pode ser executada paralelamente, independentemente de qualquer fator, funcionando como filas paralelas de execução de trabalho. A tomada de decisão, que é característica dessa decomposição não existe. O mestre apenas tem que saber qual o próximo escravo a receber uma palavra.
 
 \subsection{Cálculo do crivo}
-\indent \indent O algoritmo para o cálculo é análogo para o projeto OMP. O cálculo aqui também paraleliza a marcação dos mútiplos dos primos. O processo meste itera os números de 2 até a raiz do maior número e requisita ao processos escravos que demarquem os múltiplos dos primos. Para encontrar se um número é primo, o processo mestre faz uma requisição ao escravo que contém o intervalo do número requisitado. O escravo então responde ao processo mestre que responde ao processo que fez a pergunta se o número é primo ou não. A decomposição é a de dados, pelas mesmas razões citadas no projeto OMP.\\
+\indent \indent O algoritmo para o cálculo é análogo para o projeto OpenMP. O cálculo aqui também paraleliza a marcação dos mútiplos dos primos. O processo meste itera os números de 2 até a raiz do maior número e requisita ao processos escravos que demarquem os múltiplos dos primos. Para encontrar se um número é primo, o processo mestre faz uma requisição ao escravo que contém o intervalo do número requisitado. O escravo então responde ao processo mestre que responde ao processo que fez a pergunta se o número é primo ou não. A decomposição é a de dados, pelas mesmas razões citadas no projeto OpenMP.\\
 \indent Assim como anteriormente, testes de performance foram aplicados isoladamente do resto do programa. Os tempos obtidos encontram-se na figura~\ref{graph-sieve-mpi}.
 \begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-sieve-mpi}
@@ -157,8 +160,8 @@ Os valores do números de threads e o tamanho do bloco que cada thread executa f
 
 \newpage
 \begin{thebibliography}{99}
-	\bibitem[OMP]{mp1}http://bisqwit.iki.fi/story/howto/openmp/
-	\bibitem[OMP]{mp2}http://openmp.org/wp/
+	\bibitem[OpenMP]{mp1}http://bisqwit.iki.fi/story/howto/openmp/
+	\bibitem[OpenMP]{mp2}http://openmp.org/wp/
 	\bibitem[Gnuplot]{gnuplot}http://www.duke.edu/~hpgavin/gnuplot.html
 	\bibitem[Crivo de Eratóstenes]{crivo1} http://en.wikipedia.org/wiki/Sieve\_of\_Eratosthenes
 	\bibitem[Crivo de Eratóstenes]{crivo2} http://www.algorithmist.com/index.php/Prime\_Sieve\_of\_Eratosthenes

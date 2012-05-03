@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 	return 0;
 }
 #endif
+
 #ifdef SIEVE_MAIN
 /**
  * Main.
@@ -37,6 +38,7 @@ int main(int argc, char** argv)
 	return 0;
 }
 #endif
+
 #ifdef MAIN
 /**
  * Main.
