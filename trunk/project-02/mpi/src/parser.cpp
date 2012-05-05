@@ -23,7 +23,7 @@ void bigParser()
 	string s;
 	char * cstr;
 	char buffer;
-	ifstream big("small.in");
+	ifstream big("big.in");
 	if(!big)
 	{
 		cout << "Error opening file." << endl;
@@ -55,7 +55,7 @@ void smallParser()
 	string s;
 	char * cstr;
 	char buffer;
-	/*ifstream small("small.in");
+	ifstream small("small.in");
 	if(!small)
 	{
 		cout << "Error opening file." << endl;
@@ -96,7 +96,7 @@ void smallParser()
 		strcpy (cstr, s.c_str());
 		MPI_Send(cstr, s.size(), MPI_CHAR, PALINDROME_MASTER_RANK, TAG_RUN_PALINDROME, MPI_COMM_WORLD);
 		delete cstr;
-	}*/
+	}
 	
 	MPI_Send(&buffer, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_PARSER_FINISHED, MPI_COMM_WORLD);
 }
