@@ -74,7 +74,7 @@ void readSmall()
 		transform(s.begin(), s.end(), s.begin(), ::tolower);
 		cstr = new char[s.size()+1];
 		strcpy(cstr, s.c_str());
-		updatePalindromesCount(cstr, s.size(), true);
+		updatePalindromesCount(cstr, s.size(), false);
 		delete cstr;
 	}
 }
