@@ -28,8 +28,10 @@ ifneq ($(PALINDROME_MAIN),)
 	FLAGS += -DPALINDROME_MAIN
 else ifneq ($(SIEVE_MAIN),)
 	FLAGS += -DSIEVE_MAIN
-else
-	FLAGS += -DMAIN
+else ifneq ($(SMALL_MAIN),)
+	FLAGS += -DSMALL_MAIN
+else ifneq ($(BIG_MAIN),)
+	FLAGS += -DBIG_MAIN
 endif
 	
 all: debug

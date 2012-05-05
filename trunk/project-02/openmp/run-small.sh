@@ -1,14 +1,14 @@
 #!/bin/bash
 size=15
-for ((pThreads = 2; pThreads <= 20; pThreads++))
+for ((pThreads = 2; pThreads <= 10; pThreads++))
 do
-	for ((sThreads = 1; sThreads <= 256; sThreads *= 256))
+	for ((sThreads = 2; sThreads <= 10; sThreads++))
 	do
 		cd src
 		make -s clean
-		make -s PALINDROME_N_THREADS=$pThreads PALINDROME_BLOCK_SIZE=$size SIEVE_N_THREADS=$sThreads
+		make -s release PALINDROME_N_THREADS=$pThreads PALINDROME_BLOCK_SIZE=$size SIEVE_N_THREADS=$sThreads SMALL_MAIN=1
 		cd ..
-		/usr/bin/time -f "$pThreads $sThreads %e" -o palindrome-small.points -a ./src/main < src/small.in
+		/usr/bin/time -f "$pThreads $sThreads %e" -o run-small.points -a ./src/main < src/small.in
 		echo "Done (palindrome/sieve threads): $pThreads $sThreads"
 	done
 done

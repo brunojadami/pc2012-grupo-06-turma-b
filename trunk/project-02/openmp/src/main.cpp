@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 }
 #endif
 
-#ifdef MAIN
+#ifdef SMALL_MAIN
 /**
  * Main.
  * @param argc
@@ -48,12 +48,28 @@ int main(int argc, char** argv)
  */
 int main(int argc, char** argv)
 {
-	char word[10000];
+	sieve();
+	readSmall();
 	
-	while (scanf("%s", word) != EOF)
-	{
-		updatePalindromesCount(word, strlen(word), false);
-	}
+	printf("Palindromes: %d\nPrimes: %d\n", getPalindromesCount(), getPrimesCount());
+	 
+	return 0;
+}
+#endif
+
+#ifdef BIG_MAIN
+/**
+ * Main.
+ * @param argc
+ * @param argv
+ * @return
+ */
+int main(int argc, char** argv)
+{
+	sieve();
+	readBig();
+	
+	printf("Palindromes: %d\nPrimes: %d\n", getPalindromesCount(), getPrimesCount());
 	 
 	return 0;
 }
