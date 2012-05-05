@@ -77,6 +77,7 @@ void smallParser()
 	    			continue;
 	    		}
 	    		
+	    		transform(word.begin(), word.end(), word.begin(), ::tolower);
 			cstr = new char[word.size()+1];
 			strcpy (cstr, word.c_str());
 			MPI_Send(cstr, word.size(), MPI_CHAR, PALINDROME_MASTER_RANK, TAG_RUN_PALINDROME, MPI_COMM_WORLD);
