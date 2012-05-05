@@ -19,7 +19,7 @@ void runPalindrome(char* word, int s, bool& palindrome, bool& prime)
 	
 	for (int i = 0; i < s / 2; ++i)
 	{
-		sum += word[i] + word[s - i - 1];
+		sum += (int) word[i] + (int) word[s - i - 1];
 		palindrome &= word[i] == word[s - i - 1];
 	}
 	
@@ -39,7 +39,7 @@ void runPalindrome(char* word, int s, bool& palindrome, bool& prime)
  */
 void palindromeMaster(int& palindromesCount, int&primesCount)
 {
-	char buffer[1000];
+	char buffer[100000];
 	MPI_Status status;
 	int nextSlave = 0;
 	palindromesCount = 0;

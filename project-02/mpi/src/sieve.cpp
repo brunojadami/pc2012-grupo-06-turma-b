@@ -30,12 +30,12 @@ void sieveMaster()
 	if (size == 0)
 	{
 		printf("No slaves allocated!\n");
-		return;
+		exit(-1);
 	}
 	if (MAX%size != 0)
 	{
 		printf("Invalid number of slaves!\n");
-		return;
+		exit(-1);
 	}
 	
 	int block = MAX/size;
