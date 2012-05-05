@@ -23,10 +23,15 @@ void runPalindrome(char* word, int s, bool& palindrome, bool& prime)
 		palindrome &= word[i] == word[s - i - 1];
 	}
 	
+	if (s % 2 == 1)
+	{
+		sum += word[s / 2];
+	}
+	
 	sprintf(buffer, "%d", sum);
 	
-	MPI_Send(&buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_PRIME_QUESTION, MPI_COMM_WORLD);
-	MPI_Recv(&buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_PRIME_ANSWER, MPI_COMM_WORLD, &status);
+	MPI_Send(buffer, strlen(buffer), MPI_CHAR, SIEVE_MASTER_RANK, TAG_PRIME_QUESTION, MPI_COMM_WORLD);
+	MPI_Recv(buffer, 1, MPI_CHAR, SIEVE_MASTER_RANK, TAG_PRIME_ANSWER, MPI_COMM_WORLD, &status);
 	
 	// The primality answer is true if the first char of the buffer is 1, 0 otherwise.
 	prime = buffer[0] == 1;
@@ -39,7 +44,7 @@ void runPalindrome(char* word, int s, bool& palindrome, bool& prime)
  */
 void palindromeMaster(int& palindromesCount, int&primesCount)
 {
-	char buffer[100000];
+	char buffer[5000000];
 	MPI_Status status;
 	int nextSlave = 0;
 	palindromesCount = 0;
@@ -69,12 +74,10 @@ void palindromeMaster(int& palindromesCount, int&primesCount)
 		}
 		else if (status.MPI_TAG == TAG_RUN_PALINDROME && (status.MPI_SOURCE == PARSER_SMALL_RANK || status.MPI_SOURCE == PARSER_BIG_RANK))
 		{
-			// The first char of the buffer says if the algorithm must answer the primality too.
-			// If 0, the answer will never contain a prime.
 			// Primes mmust be updated only with the PARSER_BIG_RANK.		
-			buffer[0] = status.MPI_SOURCE == PARSER_BIG_RANK ? 1 : 0;
+			int tag = status.MPI_SOURCE == PARSER_BIG_RANK ? TAG_RUN_PALINDROME : TAG_RUN_PALINDROME_NO_PRIMES;
 			
-			MPI_Send(buffer, 1, MPI_CHAR, PALINDROME_SLAVES_RANK_START + nextSlave, TAG_RUN_PALINDROME, MPI_COMM_WORLD);
+			MPI_Send(buffer, status._count, MPI_CHAR, PALINDROME_SLAVES_RANK_START + nextSlave, tag, MPI_COMM_WORLD);
 			nextSlave = (nextSlave + 1) % PALINDROME_SLAVES_COUNT;
 			
 			slavesRunning++;
@@ -94,21 +97,22 @@ void palindromeMaster(int& palindromesCount, int&primesCount)
  */
 void palindromeSlave()
 {
-	char buffer[1000];
+	char buffer[5000000];
 	MPI_Status status;
 	bool finish = false;
+	
+	int calls = 0;
 	
 	while (!finish)
 	{
 		MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		MPI_Recv(&buffer, status._count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		
-		if (status.MPI_TAG == TAG_RUN_PALINDROME && status.MPI_SOURCE == PALINDROME_MASTER_RANK)
+		if ((status.MPI_TAG == TAG_RUN_PALINDROME || status.MPI_TAG == TAG_RUN_PALINDROME_NO_PRIMES) && status.MPI_SOURCE == PALINDROME_MASTER_RANK)
 		{
 			bool palindrome, prime, updatePrime;
 			
-			// The first char of the buffer says if the algorithm must answer the primality too.
-			updatePrime = buffer[0] == 1;
+			updatePrime = status.MPI_TAG == TAG_RUN_PALINDROME;
 			
 			runPalindrome(buffer, status._count, palindrome, prime);
 			
@@ -116,11 +120,11 @@ void palindromeSlave()
 			// The first char is 1 if a palindrome was computed.
 			// The second char is 1 if a prime number was found.
 			buffer[0] = palindrome ? 1 : 0;
-			buffer[1] = updatePrime && prime ? 1 : 0;
+			buffer[1] = (palindrome && updatePrime && prime) ? 1 : 0;
 			
 			MPI_Send(buffer, 2, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_PALINDROME_DONE, MPI_COMM_WORLD);
 		}
-		else if (status.MPI_TAG == TAG_KILL && status.MPI_SOURCE == PALINDROME_MASTER_RANK )
+		else if (status.MPI_TAG == TAG_KILL && status.MPI_SOURCE == PALINDROME_MASTER_RANK)
 		{
 			finish = true;
 		}

@@ -20,6 +20,7 @@
 #define TAG_PRIME_QUESTION 		6
 #define TAG_RUN_PALINDROME 		7
 #define TAG_KILL 			8
+#define TAG_RUN_PALINDROME_NO_PRIMES	9
 
 #define PRIME_MAX			1000000
 
