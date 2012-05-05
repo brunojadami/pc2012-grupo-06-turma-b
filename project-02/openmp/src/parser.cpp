@@ -10,7 +10,6 @@
 
 using namespace std;
 
-
 int isPunct(char c) 
 {
 	if (isalpha(c)) return 0;
