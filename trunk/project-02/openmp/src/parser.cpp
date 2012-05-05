@@ -3,6 +3,9 @@
 #include <string>
 #include <cstring>
 #include <algorithm>
+#include <sstream>
+#include <iterator>
+
 #include "palindrome.h"
 
 using namespace std;
@@ -36,21 +39,24 @@ void readBig()
 	while(!cin.eof())
 	{
 		getline(cin, s);
+
 		s.erase(remove_if(s.begin(), s.end(), isPunct), s.end());
+	    	stringstream linestream(s);
+	    	string word;
+
+	    	while (linestream >> word) {
+			cstr = new char[s.size()+1];
+			strcpy (cstr, word.c_str());
+			updatePalindromesCount(cstr, s.size(), true);
+		}
 		s.erase(remove_if(s.begin(), s.end(), ::isspace), s.end());
 		transform(s.begin(), s.end(), s.begin(), ::tolower);
+
 		cstr = new char[s.size()+1];
 		strcpy (cstr, s.c_str());
-		updatePalindromesCount(cstr, s.size(), false);
+		updatePalindromesCount(cstr, s.size(), true);
+
+
 	}
-}
-
-
-int main(int argc, char* argv[]) {
-	if(!strcmp(argv[1], "small"))
-		readSmall();
-	else if(!strcmp(argv[1], "big"))
-		readBig();
-	return 0;
 }
 
