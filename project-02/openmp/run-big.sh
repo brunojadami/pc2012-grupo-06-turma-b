@@ -1,8 +1,8 @@
 #!/bin/bash
 size=15
-for ((pThreads = 2; pThreads <= 10; pThreads++))
+for ((pThreads = 2; pThreads <= 10; pThreads += 2))
 do
-	for ((sThreads = 2; sThreads <= 10; sThreads++))
+	for ((sThreads = 2; sThreads <= 10; sThreads += 2))
 	do
 		cd src
 		make -s clean

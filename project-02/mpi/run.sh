@@ -1,7 +1,7 @@
 #!/bin/bash
-for sieveSlavesCount in 2 4 8
+for sieveSlavesCount in 2 5 10
 do
-	for palindromeSlavesCount in 2 4 8
+	for palindromeSlavesCount in 2 5 10
 	do
 		cd src
 		make -s clean
