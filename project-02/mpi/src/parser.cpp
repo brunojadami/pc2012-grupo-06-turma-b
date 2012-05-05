@@ -23,7 +23,7 @@ void bigParser()
 	string s;
 	char * cstr;
 	char buffer;
-	ifstream big("big.in");
+	ifstream big("small.in");
 	if(!big)
 	{
 		cout << "Error opening file." << endl;

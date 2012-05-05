@@ -75,15 +75,24 @@ void sieveMaster()
 			res = 0;
 			int source = status.MPI_SOURCE;
 			int i = atoi(buffer);
-			int t = (i-1)/block;
-			if (t < SIEVE_SLAVES_COUNT)
+			if (i & 1)
 			{
-				MPI_Send(&res, 1, MPI_CHAR, SIEVE_SLAVES_RANK_START+t, 0, MPI_COMM_WORLD);
-				MPI_Send(&i, 1, MPI_INT, SIEVE_SLAVES_RANK_START+t, 0, MPI_COMM_WORLD);
-				MPI_Recv(&res, 1, MPI_CHAR, SIEVE_SLAVES_RANK_START+t, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				int t = (i-1)/block;
+				if (t < SIEVE_SLAVES_COUNT)
+				{
+					MPI_Send(&res, 1, MPI_CHAR, SIEVE_SLAVES_RANK_START+t, 0, MPI_COMM_WORLD);
+					MPI_Send(&i, 1, MPI_INT, SIEVE_SLAVES_RANK_START+t, 0, MPI_COMM_WORLD);
+					MPI_Recv(&res, 1, MPI_CHAR, SIEVE_SLAVES_RANK_START+t, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				}
+				else printf("Invalid prime number! Too big %d\n", i);
 			}
-			else printf("Invalid prime number! Too big %d\n", i);
-			buffer[0] = res;
+			else if (i == 2)
+			{
+				res = 0;
+			}
+			else res = 1;
+				
+			buffer[0] = !res;
 			MPI_Send(buffer, 1, MPI_CHAR, source, TAG_PRIME_ANSWER, MPI_COMM_WORLD);
 		}
 	}
