@@ -1,4 +1,5 @@
 #include <omp.h>
+#include <cstdio>
 #include "palindrome.h"
 #include "sieve.h"
 
@@ -21,8 +22,13 @@ void updatePalindromesCount(char* word, int s, bool updatePrimeCount)
 	#pragma omp parallel for num_threads(PALINDROME_N_THREADS) schedule(dynamic, PALINDROME_BLOCK_SIZE) reduction(+:sum) reduction(&&:palindrome)
 	for (i = 0; i < s / 2; ++i)
 	{
-		sum += word[i] + word[s - i - 1];
+		sum += (int) word[i] + (int) word[s - i - 1];
 		palindrome &= word[i] == word[s - i - 1];
+	}
+	
+	if (sum < 0)
+	{
+		int t = 0;
 	}
 	
 	palindromesCount += palindrome ? 1 : 0;
