@@ -16,44 +16,61 @@ int isPunct(char c)
 	return 1;
 }
 
-void readSmall()
-{
-	string s;
-	char * cstr;
-	while(!cin.eof())
-	{
-		cin >> s;
-		
-		s.erase(remove_if(s.begin(), s.end(), isPunct), s.end());
-		transform(s.begin(), s.end(), s.begin(), ::tolower);
-		cstr = new char[s.size()+1];
-		strcpy (cstr, s.c_str());
-		updatePalindromesCount(cstr, s.size(), false);
-		delete cstr;
-	}
-}
-
 void readBig()
 {
 	string s;
 	char * cstr;
 	while(!cin.eof())
 	{
-		getline(cin, s);
-
+		cin >> s;
 		s.erase(remove_if(s.begin(), s.end(), isPunct), s.end());
-	    	stringstream linestream(s);
+		
+		if (s.size() == 0)
+		{
+			continue;
+		}
+		
+		transform(s.begin(), s.end(), s.begin(), ::tolower);
+		cstr = new char[s.size()+1];
+		strcpy (cstr, s.c_str());
+		updatePalindromesCount(cstr, s.size(), true);
+		delete cstr;
+	}
+}
+
+void readSmall()
+{
+	string s;
+	char * cstr;
+	while(!cin.eof())
+	{
+		getline(cin, s);
+		stringstream linestream(s);
 	    	string word;
 
 	    	while (linestream >> word) 
 	    	{
+	    		word.erase(remove_if(word.begin(), word.end(), isPunct), word.end());
+	    		
+	    		if (word.size() == 0)
+	    		{
+	    			continue;
+	    		}
+	    		
 	    		cstr = new char[word.size()+1];
 			strcpy(cstr, word.c_str());
-			updatePalindromesCount(cstr, word.size(), true);
+			updatePalindromesCount(cstr, word.size(), false);
 			delete cstr;
 		}
 		
 		s.erase(remove_if(s.begin(), s.end(), ::isspace), s.end());
+		s.erase(remove_if(s.begin(), s.end(), isPunct), s.end());
+		
+		if (s.size() == 0)
+		{
+			continue;
+		}
+		
 		transform(s.begin(), s.end(), s.begin(), ::tolower);
 		cstr = new char[s.size()+1];
 		strcpy(cstr, s.c_str());

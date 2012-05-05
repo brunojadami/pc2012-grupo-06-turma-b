@@ -26,8 +26,13 @@ void updatePalindromesCount(char* word, int s, bool updatePrimeCount)
 		palindrome &= word[i] == word[s - i - 1];
 	}
 	
+	if (s % 2 == 1)
+	{
+		sum += word[s / 2];
+	}
+	
 	palindromesCount += palindrome ? 1 : 0;
-	primesCount += updatePrimeCount && isPrime(sum) ? 1 : 0;
+	primesCount += (palindrome && updatePrimeCount && isPrime(sum)) ? 1 : 0;
 }
 
 /**
