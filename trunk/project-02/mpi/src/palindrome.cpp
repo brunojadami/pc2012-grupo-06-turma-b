@@ -42,7 +42,7 @@ void runPalindrome(char* word, int s, bool& palindrome, bool& prime)
  * @param palindromesCount Will be set to the number of palindromes calculated.
  * @param primesCount Will be set to the number of primes calculated.
  */
-void palindromeMaster(int& palindromesCount, int&primesCount)
+void palindromeMaster(int& palindromesCount, int& primesCount)
 {
 	char buffer[5000000];
 	MPI_Status status;
