@@ -2,36 +2,77 @@
 #include <cstring>
 #include "parser.h"
 #include "comm.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstring>
+#include <algorithm>
+#include <sstream>
+#include <iterator>
 
-/**
- * Big parser.
- */
-void bigParser()
+using namespace std;
+
+int isPunct(char c)
 {
-	char buffer[1000];
-	strcpy(buffer, "aasaa");
-	
-	for (int i = 0; i < 3; ++i)
-	{
-		MPI_Send(buffer, 1, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_RUN_PALINDROME, MPI_COMM_WORLD);
-	}
-	
-	MPI_Send(buffer, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_PARSER_FINISHED, MPI_COMM_WORLD);
+	string punctuation = "\";,.:!?'()[]{}-*";
+	if (punctuation.find(c, 0) != -1) return 1;
+	return 0;
 }
 
-/**
- * Small parser.
- */
-void smallParser()
+void readSmall(char * filename)
 {
-	char buffer[1000];
-	strcpy(buffer, "aaasaaa");
-	
-	for (int i = 0; i < 1; ++i)
+	string s;
+	char * cstr;
+	ifstream small(filename);
+	if(!small)
 	{
-		MPI_Send(buffer, 1, MPI_CHAR, PALINDROME_MASTER_RANK, TAG_RUN_PALINDROME, MPI_COMM_WORLD);
+		cout << "Error opening file." << endl;
+		exit(-1);
+
 	}
-	
-	MPI_Send(buffer, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_PARSER_FINISHED, MPI_COMM_WORLD);
+	while(!small.eof())
+	{
+
+		small >> s;
+		s.erase(remove_if(s.begin(), s.end(), isPunct), s.end());
+		transform(s.begin(), s.end(), s.begin(), ::tolower);
+		cstr = new char[s.size()+1];
+		strcpy (cstr, s.c_str());
+		//MPI_Send(cstr, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_PARSER_FINISHED, MPI_COMM_WORLD);
+	}
 }
 
+void readBig(char * filename)
+{
+	string s;
+	char * cstr;
+	ifstream big(filename);
+	if(!big)
+	{
+		cout << "Error opening file." << endl;
+		exit(-1);
+
+	}
+	while(!big.eof())
+	{
+		getline(big, s);
+
+		s.erase(remove_if(s.begin(), s.end(), isPunct), s.end());
+	    	stringstream linestream(s);
+	    	string word;
+
+	    	while (linestream >> word) {
+			cstr = new char[s.size()+1];
+			strcpy (cstr, word.c_str());
+			MPI_Send(cstr, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_PARSER_FINISHED, MPI_COMM_WORLD);
+		}
+		s.erase(remove_if(s.begin(), s.end(), ::isspace), s.end());
+		transform(s.begin(), s.end(), s.begin(), ::tolower);
+
+		cstr = new char[s.size()+1];
+		strcpy (cstr, s.c_str());
+		MPI_Send(cstr, 1, MPI_CHAR, MAIN_MASTER_RANK, TAG_PARSER_FINISHED, MPI_COMM_WORLD);
+
+
+	}
+}
