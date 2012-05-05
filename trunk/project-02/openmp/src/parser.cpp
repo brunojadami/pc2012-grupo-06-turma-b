@@ -57,6 +57,7 @@ void readSmall()
 	    			continue;
 	    		}
 	    		
+	    		transform(word.begin(), word.end(), word.begin(), ::tolower);
 	    		cstr = new char[word.size()+1];
 			strcpy(cstr, word.c_str());
 			updatePalindromesCount(cstr, word.size(), false);
