@@ -44,7 +44,7 @@ void runPalindrome(char* word, int s, bool& palindrome, bool& prime)
  */
 void palindromeMaster(int& palindromesCount, int& primesCount)
 {
-	char buffer[5000000];
+	char buffer[10000];
 	MPI_Status status;
 	int nextSlave = 0;
 	palindromesCount = 0;
@@ -97,7 +97,7 @@ void palindromeMaster(int& palindromesCount, int& primesCount)
  */
 void palindromeSlave()
 {
-	char buffer[5000000];
+	char buffer[10000];
 	MPI_Status status;
 	bool finish = false;
 	
