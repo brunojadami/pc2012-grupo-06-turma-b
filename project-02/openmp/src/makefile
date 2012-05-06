@@ -32,6 +32,9 @@ else ifneq ($(SMALL_MAIN),)
 	FLAGS += -DSMALL_MAIN
 else ifneq ($(BIG_MAIN),)
 	FLAGS += -DBIG_MAIN
+else
+# Default main (should be here?)
+	FLAGS += -DBIG_MAIN
 endif
 	
 all: debug

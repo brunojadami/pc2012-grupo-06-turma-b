@@ -78,15 +78,20 @@ Lucas Lobosque\\
 \indent \indent Todas as execuções citadas no documento, responsáveis pela geração dos gráficos, foram executados no cluster disponível.
 
 \section{O projeto OpenMP}
-\indent \indent Neste projeto, a paralelização do código foi feita nos loops do programa através das chamadas dos macros da biblioteca. O programa segue um fluxo contínuo e possui blocos de código executados em paralelo. Inicialmente, o cálculo do crivo é feito. Após esse passo, os arquivos são lidos e as palavras lidas são entregues ao verificador de palíndromos. A execução do programa e seus resultados apresentam-se na figura~\ref{graph-omp}.
+\indent \indent Neste projeto, a paralelização do código foi feita nos loops do programa através das chamadas dos macros da biblioteca. O programa segue um fluxo contínuo e possui blocos de código executados em paralelo. Inicialmente, o cálculo do crivo é feito. Após esse passo, os arquivos são lidos e as palavras lidas são entregues ao verificador de palíndromos. Foi uma decisão de projeto em separar as execuções do arquivo pequeno e o grande. Isso significa que em cada execução, ou o arquivo menor ou o maior é processado. Os resultados dos testes apresentam-se na figura~\ref{graph-openmp-small} e figura~\ref{graph-openmp-big}.
 \begin{figure}[float=p]
-	\includegraphics[scale=0.5]{graph-omp}
-	\caption{Resultados da execução do projeto MPI}
-	\label{graph-omp}
+	\includegraphics[scale=0.5]{graph-openmp-small}
+	\caption{Resultados da execução do projeto MPI para o arquivo menor}
+	\label{graph-openmp-small}
+\end{figure}
+\begin{figure}[float=p]
+	\includegraphics[scale=0.5]{graph-openmp-big}
+	\caption{Resultados da execução do projeto MPI para o arquivo maior}
+	\label{graph-openmp-big}
 \end{figure}
 
 \subsection{Execução do parser}
-\indent \indent O parser foi dividido em duas funções (sendo cada uma chamada em uma execução): uma determina a ocorrência de palíndromo apenas nas palavras (texto maior) e outra nas palavras e também nas frases (texto maior). Em ambos os casos, apenas caracteres alfanuméricos são considerados (a-z, A-Z, 0-9). Esta condição se fez necessária pois haviam vários caracteres nos textos que não são representados na tabela ASCII. No caso das frases, os espaços também são removidos.
+\indent \indent O parser foi dividido em duas funções (sendo cada uma chamada em uma execução): uma determina a ocorrência de palíndromo apenas nas palavras (texto maior) e outra nas palavras e também nas frases (texto menor). Em ambos os casos, apenas caracteres alfanuméricos são considerados (a-z, A-Z, 0-9). Esta condição se fez necessária pois haviam vários caracteres nos textos que não são representados na tabela ASCII. No caso das frases, os espaços também são removidos.
 
 \subsection{Cálculo dos palíndromos}
 \indent \indent O algoritmo de cálculo dos palíndromos é simples. Sua complexidade é \begin{math}O(n)\end{math}, pois baseia-se em apenas um loop para verificar a palavra. Além disso, ele já soma os valores ASCII dos caracteres para responder se a soma total é um número primo. Para a paralelização do algoritmo, o macro citado no código~\ref{code-macro1} foi utilizado. Neste passo, a decomposição de dados foi utilizada. O vetor que contém a palavra é dividido em sessões que serão computadas pela OpenMP através da chamada do macro. Cada partição executa o loop com suas iterações correspondentes em paralelo.
@@ -107,25 +112,24 @@ Lucas Lobosque\\
 	\caption{Resultados do algoritmo do palíndromo para o arquivo maior}
 	\label{graph-palindrome-big}
 \end{figure}
-Os valores do números de threads e o tamanho do bloco que cada thread executa foram baseados em valores estimados. Um cálculo do tamanho médio das palavras provenientes da leitura cega apontou que para o arquivo menor, essa média valia 40 e para o maior, 4.
 
 \subsection{Cálculo do crivo}
 \indent \indent O crivo de Eratóstenes é um algoritmo e um método simples e prático para encontrar números primos até um certo valor limite. Segundo a tradição, foi criado pelo matemático grego Eratóstenes (c. 285-194 a.C.), o terceiro bibliotecário-chefe da biblioteca de Alexandria.\\
 \indent O algoritmo se baseia em marcar os múltiplos dos primos encontrados até agora. Os números não marcados serão os números primos. Deve-se iterar do número 2 em diante até a raíz do maior número que se deseja calcular. A complexidade do algoritmo é \begin{math}O(n\log(\log n))\end{math}.\\
 \indent Na implementação deste trabalho os números pares são ignorados para otimizar um pouco o método. A função isPrime testa se o número par é primo ou não. No caso, apenas o 2 será. Se o número for ímpar, esta função irá checar o vetor de marcação dos múltiplos.\\
-\indent A decomposição utilizada foi a de dados, pois foi paralelizada a demarcação dos mútiplos dos números primos, onde cada thread fica responsável por um trecho do vetor dos múltiplos. Para isso usou-se o código~\ref{code-macro2}, que separa o for em vários blocos, o número de blocos é determinado pelo macro SIEVE\_N\_THREADS. A implementação em OpenMP paraleliza a parte que faz a marcação dos múltiplos do primo encontrado. No fim para saber se o número é primo ou não, basta apenas checar o vetor de marcação dos múltiplos.
+\indent A decomposição utilizada foi a de dados, pois foi paralelizada a demarcação dos mútiplos dos números primos, onde cada thread fica responsável por um trecho do vetor dos múltiplos. Para isso usou-se o código~\ref{code-macro2}, que separa o for em vários blocos. O número de blocos é determinado pelo macro SIEVE\_N\_THREADS. A implementação em OpenMP paraleliza a parte que faz a marcação dos múltiplos do primo encontrado. No fim para saber se o número é primo ou não, basta apenas checar o vetor de marcação dos múltiplos.
 \begin{lstlisting}[caption=Macro que paraleliza o algoritmo do palíndromo, label=code-macro2]
 #pragma omp parallel for num_threads(SIEVE_N_THREADS)
 \end{lstlisting}
-\indent \indent Testes de performance foram aplicados isoladamente do resto do programa. Os resultados obtidos encontram-se na figura~\ref{graph-sieve-omp}.
+\indent \indent Testes de performance foram aplicados isoladamente do resto do programa. Os resultados obtidos encontram-se na figura~\ref{graph-sieve-openmp}.
 \begin{figure}[float=p]
-	\includegraphics[scale=0.5]{graph-sieve-omp}
+	\includegraphics[scale=0.5]{graph-sieve-openmp}
 	\caption{Tempos de execução do crivo usando OpenMP}
-	\label{graph-sieve-omp}
+	\label{graph-sieve-openmp}
 \end{figure}
 
 \section{O projeto MPI}
-\indent \indent O projeto MPI foi desenvolvido seguindo a estrutura da figura~\ref{pic-mpi}. Todos os processos do programa têm suas chamadas principais executadas no início do programa. Existem três tipos de processos:
+\indent \indent O projeto MPI foi desenvolvido seguindo a estrutura da figura~\ref{pic-mpi}. Todos os processos do programa têm suas chamadas principais executadas no início do programa. Neste projeto, a leitura dos arquivos pequeno e grande são feitas em conjunto, diferentemente do projeto anterior. Existem três tipos de processos:
 \begin{itemize}
 	\item Processos mestres principais.
 	\item Processos mestres secundários.
@@ -136,7 +140,7 @@ Os valores do números de threads e o tamanho do bloco que cada thread executa f
 	\caption{A estrutura do projeto MPI}
 	\label{pic-mpi}
 \end{figure}
-\indent \indent Há somente um processo mestre principal. O mestre principal é responsável por controlar os processos do segundo tipo, os processos mestres secundários. Ele envia mensagens de finalização para esses processos e recebe informações de término ao final da execução deles. Neste projeto, todo o sistema foi testado em conjunto. Várias configurações de números de escravos foram utilizadas. Os resultado obtidos encontram-se na figura~\ref{graph-mpi}.
+\indent \indent Há somente um processo mestre principal. O mestre principal é responsável por controlar os processos do segundo tipo, os processos mestres secundários. Ele envia mensagens de finalização para esses processos e recebe informações de término ao final da execução deles. Neste projeto, todo o sistema foi testado em conjunto. Várias configurações de números de escravos foram utilizadas. Os testes foram aplicados sem a leitura do arquivo maior, pois a leitura desse arquivo demorava muito. Os resultados obtidos encontram-se na figura~\ref{graph-mpi}.
 \begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-mpi}
 	\caption{Resultados da execução do projeto MPI}
@@ -144,21 +148,58 @@ Os valores do números de threads e o tamanho do bloco que cada thread executa f
 \end{figure}
 
 \subsection{Execução do parser}
-\indent \indent O parser segue as mesmas regras descritas anteriormente. Porém neste caso as leituras dos 2 arquivos são feitas paralelamente, e os dados são coletados pela leitura dos arquivos (small.in e big.in) e não pela entrada padrão.
+\indent \indent O parser segue as mesmas regras descritas no projeto do OpenMP. Porém, neste caso as leituras dos 2 arquivos são feitas paralelamente, e os dados são coletados pela leitura dos arquivos (small.in e big.in) e não pela entrada padrão.
 
 \subsection{Cálculo dos palíndromos}
-\indent \indent O algoritmo para o cálculo é o mesmo utilizado para o projeto OpenMP. Há um processo mestre que coordena os processos escravos. Ao receber uma palavra, o processo mestre envia a mensagem ao próximo escravo da fila (uma file round-robin) e o escravo executa o algoritmo do palíndromo, enviando ao mestre o resultado. Aqui, a decomposição pode ser vista como uma decomposição pseudo-especulativa. Na verdade, cada requisição pode ser executada paralelamente, independentemente de qualquer fator, funcionando como filas paralelas de execução de trabalho. A tomada de decisão, que é característica dessa decomposição não existe. O mestre apenas tem que saber qual o próximo escravo a receber uma palavra.
+\indent \indent O algoritmo para o cálculo é o mesmo utilizado para o projeto OpenMP. Há um processo mestre que coordena os processos escravos. Ao receber uma palavra, o processo mestre envia a mensagem ao próximo escravo da fila (uma fila round-robin) e o escravo executa o algoritmo do palíndromo, enviando ao mestre o resultado. Aqui, a decomposição pode ser vista como uma decomposição pseudo-especulativa. Na verdade, cada requisição pode ser executada paralelamente, independentemente de qualquer fator, funcionando como filas paralelas de execução de trabalho. A tomada de decisão, que é característica dessa decomposição não existe. O mestre apenas tem que saber qual o próximo escravo a receber uma palavra.
 
 \subsection{Cálculo do crivo}
 \indent \indent O algoritmo para o cálculo é análogo para o projeto OpenMP. O cálculo aqui também paraleliza a marcação dos mútiplos dos primos. O processo meste itera os números de 2 até a raiz do maior número e requisita ao processos escravos que demarquem os múltiplos dos primos. Para encontrar se um número é primo, o processo mestre faz uma requisição ao escravo que contém o intervalo do número requisitado. O escravo então responde ao processo mestre que responde ao processo que fez a pergunta se o número é primo ou não. A decomposição é a de dados, pelas mesmas razões citadas no projeto OpenMP.\\
-\indent Assim como anteriormente, testes de performance foram aplicados isoladamente do resto do programa. Os tempos obtidos encontram-se na figura~\ref{graph-sieve-mpi}.
+\indent Para o crivo, testes de performance foram aplicados isoladamente do resto do programa. Os tempos obtidos encontram-se na figura~\ref{graph-sieve-mpi}.
 \begin{figure}[float=p]
 	\includegraphics[scale=0.5]{graph-sieve-mpi}
 	\caption{Tempos de execução do crivo usando MPI}
 	\label{graph-sieve-mpi}
 \end{figure}
 
-\newpage
+\section{Considerações finais}
+\indent \indent A execução do projeto MPI no cluster falhou. Os erros mostrados estão presentes no código~\ref{code-erros}. A causa desses erros não foi pesquisada a fundo. Para driblar esse problema, foi utilizada uma máquina local, com 2 CPUs e 4 GB de memória RAM.\\
+\indent No final das execuções, a quantidade de palíndromos e números primos, de acordo com o parser criado para os projetos, foram coletadas e estão mostradas na tabela~\ref{table-values}.
+\begin{lstlisting}[caption=Erros do MPI no cluster, label=code-erros, float=p]
+mpirun noticed that job rank 0 with PID 21811 on node x-men exited on signal 15 (Terminated). 
+8 additional processes aborted (not shown)
+
+mpirun noticed that job rank 0 with PID 21888 on node x-men exited on signal 15 (Terminated). 
+10 additional processes aborted (not shown)
+
+[x-men][0,1,1][btl_sm_component.c:521:mca_btl_sm_component_progress] 
+	SM faild to send message due to shortage of shared memory.
+
+[x-men][0,1,5][btl_sm_component.c:521:mca_btl_sm_component_progress] 
+	SM faild to send message due to shortage of shared memory.
+
+[x-men][0,1,6][btl_sm_component.c:521:mca_btl_sm_component_progress] 
+	SM faild to send message due to shortage of shared memory.
+
+[x-men][0,1,7][btl_sm_component.c:521:mca_btl_sm_component_progress] 
+	SM faild to send message due to shortage of shared memory.
+
+[x-men][0,1,10][btl_sm_component.c:521:mca_btl_sm_component_progress] 
+	SM faild to send message due to shortage of shared memory.
+
+[x-men:21931] [0,0,0] ORTE_ERROR_LOG: Timeout in file base/pls_base_orted_cmds.c at line 275
+[x-men:21931] [0,0,0] ORTE_ERROR_LOG: Timeout in file pls_rsh_module.c at line 1155
+[x-men:21931] [0,0,0] ORTE_ERROR_LOG: Timeout in file errmgr_hnp.c at line 90
+\end{lstlisting}
+\begin{center} \begin{table}[float=p] \caption{Resultados das execuções} \label{table-values} \begin{tabular}{|l|l|l|l|}
+	\hline
+	Medida 		& OpenMP - Arquivo maior 	& OpenMP - Arquivo menor 	& MPI \\
+	\hline
+	Palíndromos	& 45475				& 302389			& 347864 \\
+	Primos		& 0				& 190327			& 190327 \\
+\hline
+\end{tabular} \end{table} \end{center}
+
 \begin{thebibliography}{99}
 	\bibitem[OpenMP]{mp1}http://bisqwit.iki.fi/story/howto/openmp/
 	\bibitem[OpenMP]{mp2}http://openmp.org/wp/
