@@ -86,7 +86,7 @@ Lucas Lobosque\\
 \end{figure}
 
 \subsection{Execução do parser}
-\indent \indent TODO.
+\indent \indent O parser foi dividido em duas funções (sendo cada uma chamada em uma execução): uma determina a ocorrência de palíndromo apenas nas palavras (texto maior) e outra nas palavras e também nas frases (texto maior). Em ambos os casos, apenas caracteres alfanuméricos são considerados (a-z, A-Z, 0-9). Esta condição se fez necessária pois haviam vários caracteres nos textos que não são representados na tabela ASCII. No caso das frases, os espaços também são removidos.
 
 \subsection{Cálculo dos palíndromos}
 \indent \indent O algoritmo de cálculo dos palíndromos é simples. Sua complexidade é \begin{math}O(n)\end{math}, pois baseia-se em apenas um loop para verificar a palavra. Além disso, ele já soma os valores ASCII dos caracteres para responder se a soma total é um número primo. Para a paralelização do algoritmo, o macro citado no código~\ref{code-macro1} foi utilizado. Neste passo, a decomposição de dados foi utilizada. O vetor que contém a palavra é dividido em sessões que serão computadas pela OpenMP através da chamada do macro. Cada partição executa o loop com suas iterações correspondentes em paralelo.
@@ -144,7 +144,7 @@ Os valores do números de threads e o tamanho do bloco que cada thread executa f
 \end{figure}
 
 \subsection{Execução do parser}
-\indent \indent TODO.
+\indent \indent O parser segue as mesmas regras descritas anteriormente. Porém neste caso as leituras dos 2 arquivos são feitas paralelamente, e os dados são coletados pela leitura dos arquivos (small.in e big.in) e não pela entrada padrão.
 
 \subsection{Cálculo dos palíndromos}
 \indent \indent O algoritmo para o cálculo é o mesmo utilizado para o projeto OpenMP. Há um processo mestre que coordena os processos escravos. Ao receber uma palavra, o processo mestre envia a mensagem ao próximo escravo da fila (uma file round-robin) e o escravo executa o algoritmo do palíndromo, enviando ao mestre o resultado. Aqui, a decomposição pode ser vista como uma decomposição pseudo-especulativa. Na verdade, cada requisição pode ser executada paralelamente, independentemente de qualquer fator, funcionando como filas paralelas de execução de trabalho. A tomada de decisão, que é característica dessa decomposição não existe. O mestre apenas tem que saber qual o próximo escravo a receber uma palavra.
