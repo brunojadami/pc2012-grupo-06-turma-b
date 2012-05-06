@@ -1,0 +1,19 @@
+mpirun noticed that job rank 0 with PID 21811 on node x-men exited on signal 15 (Terminated). 
+8 additional processes aborted (not shown)
+
+mpirun noticed that job rank 0 with PID 21888 on node x-men exited on signal 15 (Terminated). 
+10 additional processes aborted (not shown)
+
+[x-men][0,1,1][btl_sm_component.c:521:mca_btl_sm_component_progress] SM faild to send message due to shortage of shared memory.
+
+[x-men][0,1,5][btl_sm_component.c:521:mca_btl_sm_component_progress] SM faild to send message due to shortage of shared memory.
+
+[x-men][0,1,6][btl_sm_component.c:521:mca_btl_sm_component_progress] SM faild to send message due to shortage of shared memory.
+
+[x-men][0,1,7][btl_sm_component.c:521:mca_btl_sm_component_progress] SM faild to send message due to shortage of shared memory.
+
+[x-men][0,1,10][btl_sm_component.c:521:mca_btl_sm_component_progress] SM faild to send message due to shortage of shared memory.
+
+[x-men:21931] [0,0,0] ORTE_ERROR_LOG: Timeout in file base/pls_base_orted_cmds.c at line 275
+[x-men:21931] [0,0,0] ORTE_ERROR_LOG: Timeout in file pls_rsh_module.c at line 1155
+[x-men:21931] [0,0,0] ORTE_ERROR_LOG: Timeout in file errmgr_hnp.c at line 90
