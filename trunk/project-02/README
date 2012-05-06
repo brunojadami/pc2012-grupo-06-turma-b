@@ -1,0 +1,5 @@
+PORTUGUÊS:
+
+Todas as execuções citadas no documento foram rodadas usando os arquivos de shellscript presentes nas pastas /openmp e /mpi.
+Para testar a execução dos programas, utilize os makefiles correspondentes.
+
