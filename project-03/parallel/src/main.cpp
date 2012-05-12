@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <mpi.h>
 #include <omp.h>
+#include <stdlib.h>
 #include "parser.h"
 
 int n, row, iMax;
@@ -10,8 +11,8 @@ double* x_;
 double* b;
 double error;
 
-void createIdentity(double**, double*, int);
-int run();
+void createIdentity();
+int run(int, char**);
 void process(int, int);
 int canStop();
 void solve(double&, double&);
@@ -20,14 +21,13 @@ int main(int argc, char** argv)
 {
 	readInput(n, row, error, iMax);
 	a = readMA(n);
-	a_ = createMA(n);
 	b = readMB(n);
 	x = cloneB(b, n);
 	x_ = cloneB(b, n);
 	
-	createIdentity(a, b, n);
+	createIdentity();
 	
-	int i = run();
+	int i = run(argc, argv);
 	
 	double answer, bi;
 	solve(answer, bi);
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void createIdentity(double** a, double* b, int n)
+void createIdentity()
 {
 	#pragma omp parallel for num_threads(4)
 	for (int i = 0; i < n; ++i)
@@ -53,7 +53,7 @@ void createIdentity(double** a, double* b, int n)
 	}
 }
 
-int run()
+int run(int argc, char** argv)
 {
 	int rank, procs;
 

@@ -1,5 +1,6 @@
 #include "parser.h"
 #include <cstdio>
+#include <cstring>
 
 void readInput(int& n, int& row, double& error, int& iMax)
 {
@@ -11,7 +12,7 @@ void readInput(int& n, int& row, double& error, int& iMax)
 
 double** readMA(int n)
 {
-	double** m = new double[n];
+	double** m = new double*[n];
 	for (int i = 0; i < n; ++i)
 	{
 		m[i] = new double[n];
