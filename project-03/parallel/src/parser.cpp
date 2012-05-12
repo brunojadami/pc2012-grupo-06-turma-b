@@ -10,26 +10,15 @@ void readInput(int& n, int& row, double& error, int& iMax)
 	scanf("%d", &iMax);
 }
 
-double** readMA(int n)
-{
-	double** m = new double*[n];
-	for (int i = 0; i < n; ++i)
-	{
-		m[i] = new double[n];
-	}
-	
-	for (int i = 0; i < n; ++i)
-	{
-		for (int j = 0; j < n; ++j)
-		{
-			scanf("%lf", &m[i][j]);
-		}
-	}
-}
-
-double* readMB(int n)
+double* createM(int n)
 {
 	double* m = new double[n];
+	return m;
+}
+
+double* readM(int n)
+{
+	double* m = createM(n);
 	
 	for (int i = 0; i < n; ++i)
 	{
@@ -39,10 +28,10 @@ double* readMB(int n)
 	return m;
 }
 
-double* cloneB(double* b, int n)
+double* cloneM(double* m, int n)
 {
-	double* b_ = new double[n];
-	memcpy(b_, b, n * sizeof(double));
-	return b_;
+	double* m_ = new double[n];
+	memcpy(m_, m, n * sizeof(double));
+	return m_;
 }
 

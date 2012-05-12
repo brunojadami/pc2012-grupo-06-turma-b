@@ -2,8 +2,8 @@
 #define PARSER_H
  
 void readInput(int&, int&, double&, int&);
-double** readMA(int);
-double* readMB(int);
-double* cloneB(double*, int);
+double* createM(int);
+double* readM(int);
+double* cloneM(double*, int);
 
 #endif

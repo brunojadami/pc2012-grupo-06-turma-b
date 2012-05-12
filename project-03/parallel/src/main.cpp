@@ -3,93 +3,135 @@
 #include <omp.h>
 #include <stdlib.h>
 #include "parser.h"
+#include "context.h"
 
-int n, row, iMax;
-double** a;
-double* x;
-double* x_;
-double* b;
-double error;
+Context* context;
 
-void createIdentity();
-int run(int, char**);
+void init();
+void finalize();
+void createIdentity(int, double*, double*);
+int run();
 void process(int, int);
 int canStop();
-void solve(double&, double&);
+void solve();
 
 int main(int argc, char** argv)
 {
-	readInput(n, row, error, iMax);
-	a = readMA(n);
-	b = readMB(n);
-	x = cloneB(b, n);
-	x_ = cloneB(b, n);
+	MPI_Init(&argc, &argv);
 	
-	createIdentity();
+	init();
 	
-	int i = run(argc, argv);
+	int i = run();
 	
-	double answer, bi;
-	solve(answer, bi);
+	if (context->getRank() == 0)
+	{
+		solve();
 	
-	printf("Iterations: %d\n", i);
-	printf("Row test: %d => [%lf] =? %lf\n", i, answer, bi);
+		printf("Iterations: %d\n", i);
+		printf("Row test: %d => [%lf] =? %lf\n", i, context->getAnswer(), context->getB()[context->getRow()]);
+	}
+	
+	finalize();
+	
+	MPI_Finalize();
 	
 	return 0;
 }
 
-void createIdentity()
+void init()
+{
+	int rank;
+	int procs;
+	int range;
+	int n;
+	int row;
+	int iMax;
+	double* a;
+	double* b;
+	double* x;
+	double* x_;
+	double error;
+	
+	MPI_Comm_size(MPI_COMM_WORLD, &procs);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	
+	if (rank == 0)
+	{
+		readInput(n, row, error, iMax);
+		a = readM(n * n);
+		b = readM(n);
+		x = cloneM(b, n);
+		x_ = createM(n);
+		
+		createIdentity(n, a, b);
+		
+		if (n % procs != 0)
+		{
+			printf("Invalid number of processes! Aborting..\n");
+			exit(-1);
+		}
+	}
+	
+	MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&row, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&error, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&iMax, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	
+	range = n / procs;
+	
+	if (rank != 0)
+	{
+		a = createM(n * n);
+		b = createM(n);
+		x = cloneM(b, n);
+		x_ = createM(n);
+	}
+	
+	MPI_Bcast(a, n * n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(b, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	
+	context = new Context(rank, procs, range, n, row, iMax, a, b, x, x_, error);
+}
+
+void finalize()
+{
+	delete context;
+}
+
+void createIdentity(int n, double* a, double* b)
 {
 	#pragma omp parallel for num_threads(4)
 	for (int i = 0; i < n; ++i)
 	{
-		double val = a[i][i];
+		double val = a[i * n + i];
 		#pragma omp parallel for num_threads(4)
 		for (int j = 0; j < n; ++j)
 		{
-			a[i][j] /= val;
+			a[i * n + j] /= val;
 		}
 		b[i] /= val;
 	}
 }
 
-int run(int argc, char** argv)
+int run()
 {
-	int rank, procs;
-
-	MPI_Init(&argc, &argv);
-	
-	MPI_Comm_size(MPI_COMM_WORLD, &procs);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	
-	if (n % procs != 0)
-	{
-		printf("Invalid number of processes! Aborting..\n");
-		exit(-1);
-	}
-	
-	int range = n / procs;
 	int stop = 0;
 	int i = 0;
 	
-	while (stop == 0 && i++ < iMax)
+	while (stop == 0 && i++ < context->getIMax())
 	{
-		if (rank > 0)
-		{
-			process(rank * range, (rank + 1) * range - 1);
-		}
+		process(context->getRank() * context->getRange(), (context->getRank() + 1) * context->getRange() - 1);
 		
-		MPI_Allgather(x_ + rank * range, range, MPI_DOUBLE, x, range, MPI_DOUBLE, MPI_COMM_WORLD);
+		MPI_Allgather(context->getX_() + context->getRank() * context->getRange(), context->getRange(), MPI_DOUBLE, context->getX(), context->getRange(), MPI_DOUBLE, MPI_COMM_WORLD);
 		
-		if (rank == 0)
+		if (context->getRank() == 0)
 		{
 			stop = canStop();
 		}
 		
 		MPI_Bcast(&stop, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	}
-	
-	MPI_Finalize();
 	
 	return i;
 }
@@ -104,7 +146,7 @@ int canStop()
 	return 0;
 }
 
-void solve(double& answer, double& bi)
+void solve()
 {
 
 }
