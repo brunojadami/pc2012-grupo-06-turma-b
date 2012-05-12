@@ -10,7 +10,7 @@ double* x_;
 double* b;
 double error;
 
-void createIdentity();
+void createIdentity(double**, double*, int);
 int run();
 void process(int, int);
 int canStop();
@@ -38,9 +38,19 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void createIdentity()
+void createIdentity(double** a, double* b, int n)
 {
-
+	#pragma omp parallel for num_threads(4)
+	for (int i = 0; i < n; ++i)
+	{
+		double val = a[i][i];
+		#pragma omp parallel for num_threads(4)
+		for (int j = 0; j < n; ++j)
+		{
+			a[i][j] /= val;
+		}
+		b[i] /= val;
+	}
 }
 
 int run()
