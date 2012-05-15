@@ -138,16 +138,35 @@ int run()
 
 void process(int lower, int upper)
 {
-
+	#pragma omp parallel for num_threads(4)
+	for (int i = lower; i <= upper; ++i)
+	{
+		x_[i] = 0;
+		#pragma omp parallel for num_threads(4) // testar aqui atomicidade
+		for (int j = 0; j < n; ++j)
+		{
+			if (i == j) continue;
+			#pragma omp atomic
+			x_[i] -= x[j]*a[i][j];
+		}
+		x_[i] += b[i];
+	}
 }
 
 int canStop()
 {
-	return 0;
+	return x_[row]-x[row] < error;
 }
 
 void solve()
 {
-
+	answer = 0;
+	bi = b[row];
+	#pragma omp parallel for num_threads(4) // testar aqui atomicidade
+	for (int i = 0; i < n; ++i)
+	{
+		#pragma omp atomic
+		answer += x_[i]*a[row][i];
+	}
 }
 
