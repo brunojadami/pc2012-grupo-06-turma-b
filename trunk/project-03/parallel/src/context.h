@@ -19,7 +19,6 @@ public:
 	double* getB() { return b; }
 	double getError() { return error; }
 	double getAnswer() { return answer; }
-	double getBi() { return bi; }
 	
 	void setAnswer(double answer) { this->answer = answer; }
 	
