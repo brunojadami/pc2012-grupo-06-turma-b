@@ -35,3 +35,9 @@ double* cloneM(double* m, int n)
 	return m_;
 }
 
+void copyM(double* m, double* d, int n)
+{
+	memcpy(d, m, n * sizeof(double));
+}
+
+

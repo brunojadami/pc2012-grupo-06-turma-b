@@ -5,5 +5,6 @@ void readInput(int&, int&, double&, int&);
 double* createM(int);
 double* readM(int);
 double* cloneM(double*, int);
+void copyM(double*, double*);
 
 #endif
