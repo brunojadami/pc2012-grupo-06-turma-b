@@ -5,6 +5,8 @@
 #include "parser.h"
 #include "context.h"
 
+#define N_THREADS 4
+
 Context* context;
 
 void init();
@@ -12,7 +14,7 @@ void finalize();
 void createIdentity(int, double*, double*);
 int run();
 void process(int, int);
-int canStop(double);
+int canStop(double*);
 void solve();
 
 int main(int argc, char** argv)
@@ -102,11 +104,11 @@ void finalize()
 
 void createIdentity(int n, double* a, double* b)
 {
-	#pragma omp parallel for num_threads(4)
+	#pragma omp parallel for num_threads(N_THREADS)
 	for (int i = 0; i < n; ++i)
 	{
 		double val = a[i * n + i];
-		#pragma omp parallel for num_threads(4)
+		#pragma omp parallel for num_threads(N_THREADS)
 		for (int j = 0; j < n; ++j)
 		{
 			a[i * n + j] /= val;
@@ -119,18 +121,27 @@ int run()
 {
 	int stop = 0;
 	int i = 0;
+	double* buffer;
+	
+	if (context->getRank() == 0)
+	{
+		buffer = createM(context->getN());
+	}
 	
 	while (stop == 0 && i++ < context->getIMax())
 	{
 		process(context->getRank() * context->getRange(), (context->getRank() + 1) * context->getRange() - 1);
 		
-		double lastValue = context->getX()[context->getRow()];
+		if (context->getRank() == 0)
+		{
+			copyM(context->getX(), buffer);
+		}
 		
 		MPI_Allgather(context->getX_() + context->getRank() * context->getRange(), context->getRange(), MPI_DOUBLE, context->getX(), context->getRange(), MPI_DOUBLE, MPI_COMM_WORLD);
 		
 		if (context->getRank() == 0)
 		{
-			stop = canStop(lastValue);
+			stop = canStop(buffer);
 		}
 		
 		MPI_Bcast(&stop, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -141,11 +152,11 @@ int run()
 
 void process(int lower, int upper)
 {
-	#pragma omp parallel for num_threads(4)
+	#pragma omp parallel for num_threads(N_THREADS)
 	for (int i = lower; i <= upper; ++i)
 	{
 		context->getX_()[i] = 0;
-		#pragma omp parallel for num_threads(4) // testar aqui atomicidade
+		#pragma omp parallel for num_threads(N_THREADS)
 		for (int j = 0; j < context->getN(); ++j)
 		{
 			if (i == j) continue;
@@ -156,8 +167,9 @@ void process(int lower, int upper)
 	}
 }
 
-int canStop(double lastValue)
+int canStop(double* lastX)
 {
+	// TODO!
 	return (context->getX()[context->getRow()] - lastValue) / context->getX()[context->getRow()] < context->getError();
 }
 
@@ -165,11 +177,11 @@ void solve()
 {
 	double answer = 0;
 	
-	#pragma omp parallel for num_threads(4) // testar aqui atomicidade
+	#pragma omp parallel for num_threads(N_THREADS)
 	for (int i = 0; i < context->getN(); ++i)
 	{
 		#pragma omp atomic
-		answer += context->getX_()[i]*context->getA()[context->getRow() * context->getN() + i];
+		answer += context->getX()[i]*context->getA()[context->getRow() * context->getN() + i];
 	}
 	
 	context->setAnswer(answer);
