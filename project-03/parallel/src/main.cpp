@@ -12,7 +12,7 @@ void finalize();
 void createIdentity(int, double*, double*);
 int run();
 void process(int, int);
-int canStop();
+int canStop(double);
 void solve();
 
 int main(int argc, char** argv)
@@ -60,10 +60,11 @@ void init()
 		readInput(n, row, error, iMax);
 		a = readM(n * n);
 		b = readM(n);
-		x = cloneM(b, n);
 		x_ = createM(n);
 		
 		createIdentity(n, a, b);
+		
+		x = cloneM(b, n);
 		
 		if (n % procs != 0)
 		{
@@ -123,11 +124,13 @@ int run()
 	{
 		process(context->getRank() * context->getRange(), (context->getRank() + 1) * context->getRange() - 1);
 		
+		double lastValue = context->getX()[context->getRow()];
+		
 		MPI_Allgather(context->getX_() + context->getRank() * context->getRange(), context->getRange(), MPI_DOUBLE, context->getX(), context->getRange(), MPI_DOUBLE, MPI_COMM_WORLD);
 		
 		if (context->getRank() == 0)
 		{
-			stop = canStop();
+			stop = canStop(lastValue);
 		}
 		
 		MPI_Bcast(&stop, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -141,32 +144,34 @@ void process(int lower, int upper)
 	#pragma omp parallel for num_threads(4)
 	for (int i = lower; i <= upper; ++i)
 	{
-		x_[i] = 0;
+		context->getX_()[i] = 0;
 		#pragma omp parallel for num_threads(4) // testar aqui atomicidade
-		for (int j = 0; j < n; ++j)
+		for (int j = 0; j < context->getN(); ++j)
 		{
 			if (i == j) continue;
 			#pragma omp atomic
-			x_[i] -= x[j]*a[i][j];
+			context->getX_()[i] -= context->getX()[j]*context->getA()[i * context->getN() + j];
 		}
-		x_[i] += b[i];
+		context->getX_()[i] += context->getB()[i];
 	}
 }
 
-int canStop()
+int canStop(double lastValue)
 {
-	return x_[row]-x[row] < error;
+	return (context->getX()[context->getRow()] - lastValue) / context->getX()[context->getRow()] < context->getError();
 }
 
 void solve()
 {
-	answer = 0;
-	bi = b[row];
+	double answer = 0;
+	
 	#pragma omp parallel for num_threads(4) // testar aqui atomicidade
-	for (int i = 0; i < n; ++i)
+	for (int i = 0; i < context->getN(); ++i)
 	{
 		#pragma omp atomic
-		answer += x_[i]*a[row][i];
+		answer += context->getX_()[i]*context->getA()[context->getRow() * context->getN() + i];
 	}
+	
+	context->setAnswer(answer);
 }
 
