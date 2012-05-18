@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 		solve();
 	
 		printf("Iterations: %d\n", i);
-		printf("Row test: %d => [%lf] =? %lf\n", i, context->getAnswer(), context->getB()[context->getRow()]);
+		printf("Row test: %d => [%lf] =? %lf\n", context->getRow(), context->getAnswer(), context->getB()[context->getRow()]);
 	}
 	
 	finalize();
@@ -90,8 +90,8 @@ void init()
 		x_ = createM(n);
 	}
 	
-	MPI_Bcast(a, n * n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	MPI_Bcast(b, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Scatter(a, n * range, MPI_DOUBLE, a + n * range * rank, n * range, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Scatter(b, range, MPI_DOUBLE, b + range * rank, range, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	
 	context = new Context(rank, procs, range, n, row, iMax, a, b, x, x_, error);
