@@ -134,7 +134,7 @@ int run()
 		
 		if (context->getRank() == 0)
 		{
-			copyM(context->getX(), buffer);
+			copyM(context->getX(), buffer, context->getN());
 		}
 		
 		MPI_Allgather(context->getX_() + context->getRank() * context->getRange(), context->getRange(), MPI_DOUBLE, context->getX(), context->getRange(), MPI_DOUBLE, MPI_COMM_WORLD);
@@ -169,8 +169,17 @@ void process(int lower, int upper)
 
 int canStop(double* lastX)
 {
-	// TODO!
-	return (context->getX()[context->getRow()] - lastValue) / context->getX()[context->getRow()] < context->getError();
+	bool stop = true;
+	#pragma omp parallel for num_threads(N_THREADS) shared(stop)
+	for (int i = 0; i < context->getN(); ++i)
+	{
+		if (!stop) continue;
+		if ((context->getX()[i] - lastX[i]) / context->getX()[i] > context->getError())
+		{
+			stop = false;
+		}
+	}
+	return stop;
 }
 
 void solve()

@@ -13,6 +13,9 @@ CC=g++
 
 all: debug
 
+lol:
+	mpic++ -openmp main.cpp parser.cpp context.cpp -g -o main
+
 clean: 
 	rm -rf *.o main
 
