@@ -1,0 +1,81 @@
+\documentclass[a4paper]{article}
+
+% Pacotes para o português.
+\usepackage[brazilian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{datetime}
+\usepackage{graphicx}
+
+% Usado nos pedaços de código.
+\usepackage{listings}
+\lstset{language=C,
+	basicstyle=\small\sffamily,
+	numbers=left,
+	numberstyle=\tiny,
+	frame=tb,
+	columns=fullflexible,
+	showstringspaces=false,
+	captionpos=b}
+\renewcommand\lstlistingname{Código}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}	
+
+% Topo 1.
+\textsc{\Large UNIVERSIDADE DE SÃO PAULO\\
+	INSTITUTO DE CIÊNCIAS MATEMÁTICAS E DE COMPUTAÇÃO}\\[0.7cm]
+
+% Topo 2.
+\textsc{\Large SSC0143}\\[0.2cm]
+\textsc{\Large Programação Concorrente - Turma B}\\[0.5cm]
+
+% Título.
+\HRule \\[0.4cm]
+{ \huge \bfseries Jacobi-Richardson}\\[0.4cm]
+\HRule \\[0.4cm]
+\textsc{Professor Dr. Julio Estrella}\\[1.5cm]
+
+% Grupo
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{Grupo 06:}\\
+Bruno Junqueira Adami\\
+Lucas Junqueira Adami\\
+Lucas Lobosque\\
+\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Números USP:}\\
+6878762\\
+6792496\\
+6792645\\
+\end{flushright}
+\end{minipage}
+
+\vfill
+
+% Rodapé.
+{\large \today}
+	
+\end{center}
+\end{titlepage}
+
+\section{O projeto sequencial}
+
+\section{O projeto paralelo}
+
+\begin{thebibliography}{99}
+	\bibitem[OpenMP]{mp1} http://bisqwit.iki.fi/story/howto/openmp/
+	\bibitem[OpenMP]{mp2} http://openmp.org/wp/
+	\bibitem[Jacobi-Richardson]{jari} Franco, Neide Bertoldi; Cálculo Numérico - São Paulo: Pearson Prentice Hall, 2006
+	\bibitem[MPI]{mpi1} http://www.slac.stanford.edu/comp/unix/farm/mpi.html
+	\bibitem[MPI]{mpi2} http://www.eecis.udel.edu/\~{}saunders/courses/372/01f/manual/manual.html
+\end{thebibliography}
+\end{document}
