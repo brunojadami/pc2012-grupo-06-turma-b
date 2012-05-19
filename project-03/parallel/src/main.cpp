@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "context.h"
 
+// Number of OpenMP threads.
 #define N_THREADS 4
 
 Context* context;
@@ -18,6 +19,12 @@ void process();
 int canStop(double*);
 void solve();
 
+/**
+ * Main.
+ * @param argc
+ * @param argv
+ * @return 
+ */
 int main(int argc, char** argv)
 {
 	MPI_Init(&argc, &argv);
@@ -26,6 +33,7 @@ int main(int argc, char** argv)
 	
 	int i = run();
 	
+        // The rank 0 is responsible for offering the answer.
 	if (context->getRank() == 0)
 	{
 		solve();
@@ -41,6 +49,9 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+/**
+ * Inits everything.
+ */
 void init()
 {
 	int rank;
@@ -58,6 +69,7 @@ void init()
 	MPI_Comm_size(MPI_COMM_WORLD, &procs);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	
+	// The rank 0 is responsible to read everything.
 	if (rank == 0)
 	{
 		readInput(n, row, error, iMax);
@@ -76,13 +88,16 @@ void init()
 		}
 	}
 	
+	// Broadcasts to all processes the context vars.
 	MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&row, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&error, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&iMax, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	
+	// Calculates the range of 'x' for each process.
 	range = n / procs;
 	
+        // Note that the other ranks (rank != 0) only contains the working area of the vectors.
 	if (rank != 0)
 	{
 		a = createM(range * n);
@@ -91,18 +106,27 @@ void init()
 		x_ = createM(range);
 	}
 	
+	// Scatters the A matrix and the B vector to the processes.
 	MPI_Scatter(a, n * range, MPI_DOUBLE, a, n * range, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Scatter(b, range, MPI_DOUBLE, b, range, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	// The X vector is on every process.
 	MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	
+	// Creates the context.
 	context = new Context(rank, procs, range, n, row, iMax, a, b, x, x_, error);
 }
 
+/**
+ * Finalizes.
+ */
 void finalize()
 {
 	delete context;
 }
 
+/**
+ * Normalize the A matrix and the B vector.
+ */
 void createIdentity(int n, double* a, double* b)
 {
 	#pragma omp parallel for num_threads(N_THREADS)
@@ -118,6 +142,9 @@ void createIdentity(int n, double* a, double* b)
 	}
 }
 
+/**
+ * Runs the method.
+ */ 
 int run()
 {
 	int stop = 0;
@@ -126,6 +153,7 @@ int run()
 	
 	if (context->getRank() == 0)
 	{
+		// This buffer is the X vector of the last iteration.
 		buffer = createM(context->getN());
 	}
 	
@@ -135,13 +163,16 @@ int run()
 		
 		if (context->getRank() == 0)
 		{
+			// Saves the current X before updating the new iteration X.
 			copyM(context->getX(), buffer, context->getN());
 		}
 		
+                // Collects the X vector.
 		MPI_Allgather(context->getX_(), context->getRange(), MPI_DOUBLE, context->getX(), context->getRange(), MPI_DOUBLE, MPI_COMM_WORLD);
 		
 		if (context->getRank() == 0)
 		{
+			// The rank 0 is responsible for the stop.
 			stop = canStop(buffer);
 		}
 		
@@ -151,6 +182,9 @@ int run()
 	return i;
 }
 
+/**
+ * Calculates the next X vector (kept on the x_ variable).
+ */
 void process()
 {		
 	#pragma omp parallel for num_threads(N_THREADS)
@@ -160,6 +194,7 @@ void process()
 		#pragma omp parallel for num_threads(N_THREADS)
 		for (int j = 0; j < context->getN(); ++j)
 		{
+			// It is not j == i because the vectors are not sparse, they only contains the working area (example: the A matrix is from 0 to range * n).
 			if (j == context->getRank() * context->getRange() + i) continue;
 			#pragma omp atomic
 			context->getX_()[i] -= context->getX()[j] * context->getA()[i * context->getN() + j];
@@ -168,6 +203,10 @@ void process()
 	}
 }
 
+/**
+ * Checks if can stop.
+ * @param lastX The last iteration X vector.
+ */
 int canStop(double* lastX)
 {
 	bool stop = true;
@@ -198,6 +237,9 @@ int canStop(double* lastX)
 	return stop;
 }
 
+/**
+ * Sets the answer value.
+ */
 void solve()
 {
 	double answer = 0;
