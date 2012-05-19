@@ -2,6 +2,7 @@
 #include <mpi.h>
 #include <omp.h>
 #include <stdlib.h>
+#include <algorithm>
 #include "parser.h"
 #include "context.h"
 
@@ -170,14 +171,29 @@ void process()
 int canStop(double* lastX)
 {
 	bool stop = true;
-	#pragma omp parallel for num_threads(N_THREADS) shared(stop)
-	for (int i = 0; i < context->getN(); ++i)
+	/*for (int i = 0; stop && i < context->getN(); ++i)
 	{
-		if (!stop) continue;
 		if ((context->getX()[i] - lastX[i]) / context->getX()[i] > context->getError())
 		{
 			stop = false;
 		}
+	}
+	return stop;*/
+	int N = 1;
+	for (int j = 0; stop && j < context->getN(); )
+	{
+		#pragma omp parallel for num_threads(N_THREADS) shared(stop)
+		for (int i = 0; i < N; ++i)
+		{
+			if (!stop) continue;
+			if ((context->getX()[i+j] - lastX[i+j]) / context->getX()[i+j] > context->getError())
+			{
+				stop = false;
+			}
+		}
+		j += N;
+		N *= 2;
+		N = std::min(N, context->getN()-N);
 	}
 	return stop;
 }
@@ -189,8 +205,9 @@ void solve()
 	#pragma omp parallel for num_threads(N_THREADS)
 	for (int i = 0; i < context->getN(); ++i)
 	{
+		double aux = context->getX()[i]*context->getA()[context->getRow() * context->getN() + i];
 		#pragma omp atomic
-		answer += context->getX()[i]*context->getA()[context->getRow() * context->getN() + i];
+		answer += aux;
 	}
 	
 	context->setAnswer(answer);
