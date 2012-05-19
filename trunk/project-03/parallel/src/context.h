@@ -1,6 +1,10 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+/**
+ * The class context contains variables from the execution. Istead of declaring
+ * all of them global, a unique instance of context is declared.
+ */
 class Context
 {
 public:
