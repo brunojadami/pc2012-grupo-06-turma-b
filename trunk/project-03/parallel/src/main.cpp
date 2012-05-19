@@ -59,14 +59,10 @@ void init()
 	
 	if (rank == 0)
 	{
-		openFile();
-		
 		readInput(n, row, error, iMax);
 		a = readM(n * n);
 		b = readM(n);
 		x_ = createM(n);
-		
-		closeFile();
 		
 		createIdentity(n, a, b);
 		

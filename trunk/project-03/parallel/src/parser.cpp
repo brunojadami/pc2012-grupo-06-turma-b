@@ -2,24 +2,12 @@
 #include <cstdio>
 #include <cstring>
 
-FILE* file;
-
-void openFile()
-{
-	file = fopen("test.txt", "r"); 
-}
-
-void closeFile()
-{
-	fclose(file);
-}
-
 void readInput(int& n, int& row, double& error, int& iMax)
 {
-	fscanf(file, "%d", &n);
-	fscanf(file, "%d", &row);
-	fscanf(file, "%lf", &error);
-	fscanf(file, "%d", &iMax);
+	scanf("%d", &n);
+	scanf("%d", &row);
+	scanf("%lf", &error);
+	scanf("%d", &iMax);
 }
 
 double* createM(int n)
@@ -34,7 +22,7 @@ double* readM(int n)
 	
 	for (int i = 0; i < n; ++i)
 	{
-		fscanf(file, "%lf", &m[i]);
+		scanf("%lf", &m[i]);
 	}
 	
 	return m;
