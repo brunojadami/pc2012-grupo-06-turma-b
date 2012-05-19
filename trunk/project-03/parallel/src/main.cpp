@@ -210,14 +210,6 @@ void process()
 int canStop(double* lastX)
 {
 	bool stop = true;
-	for (int i = 0; stop && i < context->getN(); ++i)
-	{
-		if ((context->getX()[i] - lastX[i]) / context->getX()[i] > context->getError())
-		{
-			stop = false;
-		}
-	}
-	return stop;
 	int N = 1;
 	for (int j = 0; stop && j < context->getN(); )
 	{
