@@ -13,7 +13,7 @@ void init();
 void finalize();
 void createIdentity(int, double*, double*);
 int run();
-void process(int, int);
+void process();
 int canStop(double*);
 void solve();
 
@@ -84,14 +84,14 @@ void init()
 	
 	if (rank != 0)
 	{
-		a = createM(n * n);
-		b = createM(n);
-		x = cloneM(b, n);
-		x_ = createM(n);
+		a = createM(range * n);
+		b = createM(range);
+		x = createM(n);
+		x_ = createM(range);
 	}
 	
-	MPI_Scatter(a, n * range, MPI_DOUBLE, a + n * range * rank, n * range, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	MPI_Scatter(b, range, MPI_DOUBLE, b + range * rank, range, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Scatter(a, n * range, MPI_DOUBLE, a, n * range, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Scatter(b, range, MPI_DOUBLE, b, range, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(x, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	
 	context = new Context(rank, procs, range, n, row, iMax, a, b, x, x_, error);
@@ -130,14 +130,14 @@ int run()
 	
 	while (stop == 0 && i++ < context->getIMax())
 	{
-		process(context->getRank() * context->getRange(), (context->getRank() + 1) * context->getRange() - 1);
+		process();
 		
 		if (context->getRank() == 0)
 		{
 			copyM(context->getX(), buffer, context->getN());
 		}
 		
-		MPI_Allgather(context->getX_() + context->getRank() * context->getRange(), context->getRange(), MPI_DOUBLE, context->getX(), context->getRange(), MPI_DOUBLE, MPI_COMM_WORLD);
+		MPI_Allgather(context->getX_(), context->getRange(), MPI_DOUBLE, context->getX(), context->getRange(), MPI_DOUBLE, MPI_COMM_WORLD);
 		
 		if (context->getRank() == 0)
 		{
@@ -150,18 +150,18 @@ int run()
 	return i;
 }
 
-void process(int lower, int upper)
-{
+void process()
+{		
 	#pragma omp parallel for num_threads(N_THREADS)
-	for (int i = lower; i <= upper; ++i)
+	for (int i = 0; i < context->getRange(); ++i)
 	{
 		context->getX_()[i] = 0;
 		#pragma omp parallel for num_threads(N_THREADS)
 		for (int j = 0; j < context->getN(); ++j)
 		{
-			if (i == j) continue;
+			if (j == context->getRank() * context->getRange() + i) continue;
 			#pragma omp atomic
-			context->getX_()[i] -= context->getX()[j]*context->getA()[i * context->getN() + j];
+			context->getX_()[i] -= context->getX()[j] * context->getA()[i * context->getN() + j];
 		}
 		context->getX_()[i] += context->getB()[i];
 	}
