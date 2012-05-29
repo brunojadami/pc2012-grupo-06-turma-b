@@ -209,24 +209,13 @@ void process()
  */
 int canStop(double* lastX)
 {
-	bool stop = true;
-	int N = 1;
-	for (int j = 0; stop && j < context->getN(); )
-	{
-		#pragma omp parallel for num_threads(N_THREADS) shared(stop)
-		for (int i = 0; i < N; ++i)
-		{
-			if (!stop) continue;
-			if ((context->getX()[i+j] - lastX[i+j]) / context->getX()[i+j] > context->getError())
-			{
-				stop = false;
-			}
-		}
-		j += N;
-		N *= 2;
-		N = std::min(N, context->getN()-j);
-	}
-	return stop;
+	double top = -1/0.0;
+	double bot = -1/0.0;
+	for (int i = 0; i < context->getN(); ++i)
+		top = std::max(top, fabs(context->getX()[i]-lastX[i])),
+		bot = std::max(bot, fabs(context->getX()[i]));
+	printf("%lf\n", top/bot);
+	return top/bot < context->getError();
 }
 
 /**
