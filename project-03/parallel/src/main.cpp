@@ -214,7 +214,6 @@ int canStop(double* lastX)
 	for (int i = 0; i < context->getN(); ++i)
 		top = std::max(top, fabs(context->getX()[i]-lastX[i])),
 		bot = std::max(bot, fabs(context->getX()[i]));
-	printf("%lf\n", top/bot);
 	return top/bot < context->getError();
 }
 
