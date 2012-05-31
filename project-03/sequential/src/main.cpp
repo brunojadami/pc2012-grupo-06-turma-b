@@ -4,12 +4,18 @@
 
 using namespace std;
 
+// Matrixes and vectors
 double mat[4000][4000];
 double x[4000], xaux[4000];
 double b[4000];
+// Number of lines and columns, line to inspect, max iterations and total iterations
 int n, f, it, rit;
+// Error
 double err;
 
+/**
+ * Load the input and initialize the variables.
+ */
 void init()
 {
 	scanf("%d%d%lf%d", &n, &f, &err, &it);
@@ -29,6 +35,10 @@ void init()
 		x[i] = b[i];
 }
 
+/**
+ * Check whether the error is enough to stop the method.
+ * @return If the error is enough
+ */
 bool error()
 {
 	double top = -1/0.0;
@@ -39,6 +49,9 @@ bool error()
 	return top/bot < err;
 }
 
+/**
+ * The method itself, it solves the linear problem using the Jacobi-Richardson method.
+ */
 void solve()
 {
 	bool s = false;
@@ -59,6 +72,9 @@ void solve()
 	}
 }
 
+/**
+ * Printing the inspected line result and number of iterations.
+ */
 void print()
 {
 	printf("Iterations: %d\n", rit);
@@ -68,6 +84,9 @@ void print()
         printf("Row test: %d => [%lf] =? %lf\n", f, res, b[f]);
 }
 
+/**
+ * Main function.
+ */
 int main()
 {
 	init();
