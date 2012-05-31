@@ -19,11 +19,8 @@ release: FLAGS += -s -O3
 debug: build
 release: build
 
-build: parser.o main.o
-	$(CC) $(FLAGS) main.o parser.o -o main
+build: main.o
+	$(CC) $(FLAGS) main.o -o main
 
 main.o: main.cpp
 	$(CC) -c $(FLAGS) main.cpp
-	
-parser.o: parser.cpp
-	$(CC) -c $(FLAGS) parser.cpp
