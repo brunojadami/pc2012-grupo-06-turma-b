@@ -67,14 +67,52 @@ Lucas Lobosque\\
 \end{center}
 \end{titlepage}
 
-\section{O projeto sequencial}
+\section{Introdução}
+\indent \indent Sistemas lineares são descritos conforme a equação~\ref{eq-axb}. A matriz \emph{A} do sistema linear pode ser decomposta na forma descrita pela equação~\ref{eq-aldr} e ser reduzida conforme a equação~\ref{eq-alir}.
+\begin{eqnarray} \label{eq-axb}
+	Ax = b
+\end{eqnarray}
+\begin{eqnarray} \label{eq-aldr}
+	A = L + D + R
+\end{eqnarray}
+\begin{eqnarray} \label{eq-alir}
+	A^\star = L^\star + I + R^\star 
+\end{eqnarray}
+\indent Usando essas decomposições, é possível apresentar o processo iterativo chamado de método de Jacobi-Richardson definido na equação~\ref{eq-jr}. O processo de parada do método é definido na equação~\ref{eq-stp}. Para garantir a convergência, a matriz \emph{A} deve ser estritamente diagonalmente dominante, satisfazendo o critério das linhas e colunas.
+\begin{eqnarray} \label{eq-jr}
+	x^{(k+1)} = -(L^\star + R^\star)x^{(k)} + b^\star
+\end{eqnarray}
+\begin{eqnarray} \label{eq-stp}
+	\frac{\parallel x^{(k)} - x^{(k-1)}\parallel_\infty}{\parallel x^{(k)}\parallel_\infty} < \epsilon
+\end{eqnarray}
+\indent Apresentado os conceitos necessários, o objetivo do trabalho é a implementação do método de Jacobi-Richardson utilizando uma abordagem sequencial e uma paralela usando OpenMP e MPI. Ao final, há uma discução dos resultados obtidos pelas duas abordagens.
+\section{A abordagem sequencial}
 
-\section{O projeto paralelo}
+\section{A abordagem paralela}
+\indent \indent O método pode ser considerado como um algoritmo iterativo paralelo. Isto é, a cada iteração, cada \begin{math}x^{(k)}_i\end{math} pode ser calculado independentemente das outras variáveis na mesma iteração. Portanto, é possível aplicar uma decomposição de dados, onde a cada passo, o vetor \emph{x} é distribuído entre os nós para ser calculado, cada nó recebendo uma faixa de variáveis, conforme ilustra a figura~\ref{pic-dec}.\\
+\begin{figure}[float=p]
+	\centerline{\includegraphics[width=408px, height=230px]{dec}}
+	\caption{Decomposição de dados}
+	\label{pic-dec}
+\end{figure}
+\indent O fluxo de dados segue a lógica da figura~\ref{pic-data}. O primeiro processo, o processo mestre é responsável pela administração de todo o processo. Ele carrega os arquivos de entrada, controla a cadeia de mensagens, envia aos outros processos pedaços do problema e verifica a condição de parada.\\
+\indent Em relação à matriz \emph{A}, o processo principal contém todos os seus valores, obtidos durante o carregamento do problema. Quanto aos processos secundários, o mestre envia a eles somente a faixa necessária para que eles possam executar o processo. Isto é feito através da chamada \emph{scatter} do MPI. Essa abordagem é possível pelo fato de que para o cálculo de \begin{math}x_i\end{math}, somente a linha \emph{i} da matriz \emph{A} é necessária.\\
+\indent O mesmo ocorre com o vetor \emph{b}. Para calcular \begin{math}x_i\end{math}, somente o valor da posição \emph{i} do vetor \emph{b} é necessário. Uma chamada à função \emph{scatter} é feita e cada processo secundário somente trabalha com a faixa que lhe diz respeito.\\
+\indent Para o vetor \emph{X}, é necessário a cada iteração de todo o seu conteúdo completo. Portanto, um \emph{broadcast} do MPI é feito pelo processo mestre a todos os processos antes que as iterações comecem (\begin{math}x^{(0)}\end{math}).\\
+\indent Ao término de cada iteração, os valores obtidos estão armazenados no vetor \emph{X\_}, cada processo contendo sua faixa de valores. Para prosseguir com a próxima iteração, o \emph{allgather} do MPI é chamado sobre o vetor \emph{X}, garantindo a atualização desse vetor a todos os nós.\\
+\begin{figure}[float=p]
+	\centerline{\includegraphics[width=408px, height=450px]{data}}
+	\caption{Fluxo de dados}
+	\label{pic-data}
+\end{figure}
+\indent Os macros OpenMP foram utilizados com 4 threads. Há um macro para paralelizar o processo de normalização da matriz \emph{A} antes do início do algoritmo. Há também um macro que paraleliza o cálculo de todos os \begin{math}x_i\end{math} pertencentes à faixa do processo. Para cada \begin{math}x_i\end{math}, outro macro é utilizado na multiplicação feita entre o vetor \emph{x} e a linha \emph{i} da matriz \emph{A}. Um macro foi criado para checar a condição de parada do algoritmo (definido na equação~\ref{eq-stp}). Finalmente, um último macro é usado para obter a solução do problema.
+
+\section{Resultados e conclusões}
 
 \begin{thebibliography}{99}
+	\bibitem[Jacobi-Richardson]{jari} Franco, Neide Bertoldi; Cálculo Numérico - São Paulo: Pearson Prentice Hall, 2006
 	\bibitem[OpenMP]{mp1} http://bisqwit.iki.fi/story/howto/openmp/
 	\bibitem[OpenMP]{mp2} http://openmp.org/wp/
-	\bibitem[Jacobi-Richardson]{jari} Franco, Neide Bertoldi; Cálculo Numérico - São Paulo: Pearson Prentice Hall, 2006
 	\bibitem[MPI]{mpi1} http://www.slac.stanford.edu/comp/unix/farm/mpi.html
 	\bibitem[MPI]{mpi2} http://www.eecis.udel.edu/\~{}saunders/courses/372/01f/manual/manual.html
 \end{thebibliography}
