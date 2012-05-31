@@ -1,121 +1,77 @@
-#include "parser.h"
 #include <cstdio>
-#include <cstring>
-#include <stdlib.h>
 #include <algorithm>
+#include <cmath>
 
-/**
- * Normalize the A matrix and the B vector.
- */
-void createIdentity(int n, double* a, double* b)
+using namespace std;
+
+double mat[4000][4000];
+double x[4000], xaux[4000];
+double b[4000];
+int n, f, it, rit;
+double err;
+
+void init()
 {
+	scanf("%d%d%lf%d", &n, &f, &err, &it);
+	for (int i = 0; i < n; ++i)
+		for (int j = 0; j < n; ++j)
+			scanf("%lf", &mat[i][j]);
+	for (int i = 0; i < n; ++i)
+		scanf("%lf", &b[i]);
 	for (int i = 0; i < n; ++i)
 	{
-		double val = a[i * n + i];
+		double div = mat[i][i];
 		for (int j = 0; j < n; ++j)
-		{
-			a[i * n + j] /= val;
-		}
-		b[i] /= val;
+			mat[i][j] /= div;
+		b[i] /= div;
 	}
+	for (int i = 0; i < n; ++i)
+		x[i] = b[i];
 }
 
-/**
- * Checks if can stop.
- * @param lastX The last iteration X vector.
- */
-int canStop(double* x_, double* x, double error, int n)
+bool error()
 {
-	bool stop = true;
-	int N = 1;
-	for (int j = 0; stop && j < n; )
+	double top = -1/0.0;
+	double bot = -1/0.0;
+	for (int i = 0; i < n; ++i)
+		top = max(top, fabs(xaux[i]-x[i])),
+		bot = max(bot, fabs(xaux[i]));
+	return top/bot < err;
+}
+
+void solve()
+{
+	bool s = false;
+	for (rit = 0; rit < it && !s; ++rit)
 	{
-		for (int i = 0; i < N; ++i)
+		for (int i = 0; i < n; ++i)
 		{
-			if (!stop) continue;
-			if ((x_[i+j] - x[i+j]) / x_[i+j] > error)
+			xaux[i] = b[i];
+			for (int j = 0; j < n; ++j)
 			{
-				stop = false;
+				if (i == j) continue;
+				xaux[i] -= x[j]*mat[i][j];
 			}
 		}
-		j += N;
-		N *= 2;
-		N = std::min(N, n-j);
+		if (error()) s = 1;
+		for (int i = 0; i < n; ++i)
+			x[i] = xaux[i];
 	}
-	return stop;
 }
 
-/**
- * Sets the answer value.
- */
-double solve(double* x, double* a, int row, int n)
+void print()
 {
-	double answer = 0;
-	
+	printf("Iterations: %d\n", rit);
+	double res = 0;
 	for (int i = 0; i < n; ++i)
-	{
-		double aux = x[i]*a[row*n + i];
-		answer += aux;
-	}
-	
-	return answer;
+		res += mat[f][i]*x[i];
+        printf("Row test: %d => [%lf] =? %lf\n", f, res, b[f]);
 }
 
-
-
-/**
- * Calculates the next X vector (kept on the x_ variable).
- */
-double* process(double* a, double* b, double* x, int n)
-{		
-	double * x_ = createM(n);
-	for (int i = 0; i < n; ++i)
-	{
-		x_[i] = 0;
-		for (int j = 0; j < n; ++j)
-		{
-			if (i == j) continue;
-			x_[i] -= x[j] * a[i*n + j];
-		}
-		x_[i] += b[i];
-	}
-	return x_;
-}
-
-
-
-
-int main(void)
+int main()
 {
-	int n;
-	int row;
-	int iMax;
-	double* a;
-	double* b;
-	double* x;
-	double* x_;
-	double* lastX;
-	double error;
-	double answer;
-	int i = 0;
-	int stop = 0;
-	readInput(n, row, error, iMax);
-	a = readM(n * n);
-	b = readM(n);
-	createIdentity(n, a, b);
-	x = cloneM(b, n);
-
-	while (stop == 0 && i++ < iMax)
-	{
-		lastX = cloneM(x_, n);
-		//delete[] x_;
-		x_ = process(a, b, x, n);
-		x = cloneM(lastX, n);
-		//delete[] lastX;
-		stop = canStop(x_, x, error, n);
-	}
-	answer = solve(x_, a, row, n);
-	printf("Iterations: %d\n", i);
-	printf("Row test: %d => [%lf] =? %lf\n", row, answer, b[row]);
+	init();
+	solve();
+	print();
 	return 0;
 }

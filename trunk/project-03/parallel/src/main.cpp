@@ -3,6 +3,7 @@
 #include <omp.h>
 #include <stdlib.h>
 #include <algorithm>
+#include <cmath>
 #include "parser.h"
 #include "context.h"
 
