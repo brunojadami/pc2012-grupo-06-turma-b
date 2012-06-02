@@ -1,0 +1,84 @@
+sequential 250 0.80
+sequential 500 6.60
+sequential 1000 52.58
+sequential 1500 175.13
+parallel 5 250 1.95
+parallel 5 500 8.82
+parallel 5 1000 100.67
+parallel 5 1500 149.18
+parallel 10 250 2.84
+parallel 10 500 6.71
+parallel 10 1000 39.09
+parallel 10 1500 87.62
+sequential 250 0.80
+sequential 500 6.61
+sequential 1000 52.60
+sequential 1500 175.16
+parallel 5 250 2.25
+parallel 5 500 8.86
+parallel 5 1000 85.70
+parallel 5 1500 150.20
+parallel 10 250 2.42
+parallel 10 500 6.67
+parallel 10 1000 35.00
+parallel 10 1500 86.91
+sequential 250 0.80
+sequential 500 6.61
+sequential 1000 52.57
+sequential 1500 175.13
+parallel 5 250 1.99
+parallel 5 500 8.61
+parallel 5 1000 110.63
+parallel 5 1500 149.03
+parallel 10 250 2.27
+parallel 10 500 7.07
+parallel 10 1000 35.39
+parallel 10 1500 85.58
+sequential 250 0.80
+sequential 500 6.61
+sequential 1000 52.57
+sequential 1500 175.06
+parallel 5 250 1.99
+parallel 5 500 9.34
+parallel 5 1000 81.12
+parallel 5 1500 152.30
+parallel 10 250 2.26
+parallel 10 500 6.73
+parallel 10 1000 37.24
+parallel 10 1500 86.02
+sequential 250 0.80
+sequential 500 6.60
+sequential 1000 52.59
+sequential 1500 175.20
+parallel 5 250 2.07
+parallel 5 500 8.60
+parallel 5 1000 90.55
+parallel 5 1500 149.38
+parallel 10 250 2.17
+parallel 10 500 6.66
+parallel 10 1000 41.21
+parallel 10 1500 86.99
+sequential 250 0.80
+sequential 500 6.60
+sequential 1000 52.56
+sequential 1500 175.13
+parallel 5 250 2.12
+parallel 5 500 8.32
+parallel 5 1000 88.69
+parallel 5 1500 148.82
+parallel 10 250 2.26
+parallel 10 500 6.70
+parallel 10 1000 36.05
+parallel 10 1500 87.24
+sequential 250 0.80
+sequential 500 6.64
+sequential 1000 52.55
+sequential 1500 175.07
+parallel 5 250 2.07
+parallel 5 500 8.72
+parallel 5 1000 87.22
+parallel 5 1500 148.77
+parallel 10 250 2.69
+parallel 10 500 6.76
+parallel 10 1000 34.49
+parallel 10 1500 87.02
