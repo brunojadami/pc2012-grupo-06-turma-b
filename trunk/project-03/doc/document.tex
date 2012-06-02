@@ -68,7 +68,7 @@ Lucas Lobosque\\
 \end{titlepage}
 
 \section{Introdução}
-\indent \indent Sistemas lineares são descritos conforme a equação~\ref{eq-axb}. A matriz \emph{A} do sistema linear pode ser decomposta na forma descrita pela equação~\ref{eq-aldr} e ser reduzida conforme a equação~\ref{eq-alir}.
+\indent \indent Sistemas lineares são descritos conforme a Equação~\ref{eq-axb}. A matriz \emph{A} do sistema linear pode ser decomposta na forma descrita pela Equação~\ref{eq-aldr} e ser reduzida conforme a Equação~\ref{eq-alir}.
 \begin{eqnarray} \label{eq-axb}
 	Ax = b
 \end{eqnarray}
@@ -78,7 +78,7 @@ Lucas Lobosque\\
 \begin{eqnarray} \label{eq-alir}
 	A^\star = L^\star + I + R^\star 
 \end{eqnarray}
-\indent Usando essas decomposições, é possível apresentar o processo iterativo chamado de método de Jacobi-Richardson definido na equação~\ref{eq-jr}. O processo de parada do método é definido na equação~\ref{eq-stp}. Para garantir a convergência, a matriz \emph{A} deve ser estritamente diagonalmente dominante, satisfazendo o critério das linhas e colunas.
+\indent Usando essas decomposições, é possível apresentar o processo iterativo chamado de método de Jacobi-Richardson definido na Equação~\ref{eq-jr}. O processo de parada do método é definido na Equação~\ref{eq-stp}. Para garantir a convergência, a matriz \emph{A} deve ser estritamente diagonalmente dominante, satisfazendo o critério das linhas e colunas.
 \begin{eqnarray} \label{eq-jr}
 	x^{(k+1)} = -(L^\star + R^\star)x^{(k)} + b^\star
 \end{eqnarray}
@@ -97,20 +97,21 @@ Lucas Lobosque\\
 	\caption{Decomposição de dados}
 	\label{pic-dec}
 \end{figure}
-\indent O fluxo de dados segue a lógica da Figura~\ref{pic-data}. O primeiro processo, o processo mestre é responsável pela administração de todo o processo. Ele carrega os arquivos de entrada, controla a cadeia de mensagens, envia aos outros processos pedaços do problema e verifica a condição de parada.\\
+\indent O fluxo de dados segue a lógica da Figura~\ref{pic-data}. O primeiro processo, o processo mestre é responsável pela administração de toda a execução. Ele carrega os arquivos de entrada, controla a cadeia de mensagens, envia aos outros processos pedaços do problema e verifica a condição de parada.\\
 \indent Em relação à matriz \emph{A}, o processo principal contém todos os seus valores, obtidos durante o carregamento do problema. Quanto aos processos secundários, o mestre envia a eles somente a faixa necessária para que eles possam executar o processo. Isto é feito através da chamada \emph{scatter} do MPI. Essa abordagem é possível pelo fato de que para o cálculo de \begin{math}x_i\end{math}, somente a linha \emph{i} da matriz \emph{A} é necessária.\\
 \indent O mesmo ocorre com o vetor \emph{b}. Para calcular \begin{math}x_i\end{math}, somente o valor da posição \emph{i} do vetor \emph{b} é necessário. Uma chamada à função \emph{scatter} é feita e cada processo secundário somente trabalha com a faixa que lhe diz respeito.\\
-\indent Para o vetor \emph{X}, é necessário a cada iteração de todo o seu conteúdo completo. Portanto, um \emph{broadcast} do MPI é feito pelo processo mestre a todos os processos antes que as iterações comecem (\begin{math}x^{(0)}\end{math}).\\
+\indent Para o vetor \emph{X}, é necessário a cada iteração ter todo o seu conteúdo completo. Portanto, um \emph{broadcast} do MPI é feito pelo processo mestre a todos os processos antes que as iterações comecem (\begin{math}x^{(0)}\end{math}).\\
 \indent Ao término de cada iteração, os valores obtidos estão armazenados no vetor \emph{X\_}, cada processo contendo sua faixa de valores. Para prosseguir com a próxima iteração, o \emph{allgather} do MPI é chamado sobre o vetor \emph{X}, garantindo a atualização desse vetor a todos os nós.\\
 \begin{figure}[float=p]
 	\centerline{\includegraphics[width=408px, height=450px]{data}}
 	\caption{Fluxo de dados}
 	\label{pic-data}
 \end{figure}
-\indent Os macros OpenMP foram utilizados com 4 threads. Há um macro para paralelizar o processo de normalização da matriz \emph{A} antes do início do algoritmo. Há também um macro que paraleliza o cálculo de todos os \begin{math}x_i\end{math} pertencentes à faixa do processo. Para cada \begin{math}x_i\end{math}, outro macro é utilizado na multiplicação feita entre o vetor \emph{x} e a linha \emph{i} da matriz \emph{A}. Um macro foi criado para checar a condição de parada do algoritmo (definido na equação~\ref{eq-stp}). Finalmente, um último macro é usado para obter a solução do problema.
+\indent Os macros OpenMP foram utilizados com 4 threads. Há um macro para paralelizar o processo de normalização da matriz \emph{A} antes do início do algoritmo. Há também um macro que paraleliza o cálculo de todos os \begin{math}x_i\end{math} pertencentes à faixa do processo. Para cada \begin{math}x_i\end{math}, outro macro é utilizado na multiplicação feita entre o vetor \emph{x} e a linha \emph{i} da matriz \emph{A}. Um macro foi criado para checar a condição de parada do algoritmo (definido na Equação~\ref{eq-stp}). Finalmente, um último macro é usado para obter a solução do problema.
 
 \section{Resultados e conclusões}
-\indent \indent Os experimentos consistem em 3 tipos de execução: sequencial, paralela com 5 nós e paralela com 10 nós. Cada tipo foi executado 7 vezes, seguindo uma ordem circular. As médias dos tempos de execução foram tiradas a partir dos resultados. A tabela~\ref{tab-speedups} mostra os speed-ups dos programas. Segundo ela, o programa sequencial é melhor para matrizes pequenas, de tamanho até 500. Para a execução de 5 nós, o speed-up só foi bom quando esse tamanho chega a 1500. Já para 10 nós, é possível perceber que na matriz de tamanho 500, há uma competição entre os programas paralelo e sequencial. Para as matrizes maiores que esse tamanho, essa execução obteve tempos muito bons.\\
+\indent \indent Os experimentos consistem em 3 tipos de execução: sequencial, paralela com 5 nós e paralela com 10 nós. Cada configuração foi executada 7 vezes, seguindo uma ordem circular. As médias dos tempos de execução foram tiradas a partir dos resultados e a Tabela~\ref{tab-speedups} mostra os speed-ups dos programas.\\
+\indent Segundo a tabela, o programa sequencial é melhor para matrizes pequenas, de tamanho até 500. Para a execução de 5 nós, o speed-up só foi bom quando esse tamanho chega a 1500. Já para 10 nós, é possível perceber que na matriz de tamanho 500, há uma competição entre os programas paralelo e sequencial. Para as matrizes maiores que esse tamanho, essa configuração obteve tempos muito bons.\\
 \begin{table}[float=h!]\footnotesize \centerline{\begin{tabular}{|l|l|l|}
 	\hline
 	Tamanho da matriz 	& Paralelo c/ 5 nós 	& Paralelo c/ 10 nós 	\\ \hline
@@ -128,9 +129,9 @@ Lucas Lobosque\\
 \end{figure}
 
 \newpage
-\indent O fato de que para matrizes pequenas o programa sequencial é melhor que o paralelo pode ser explicado através da Equação~\ref{eq-tmp}. O tempo que o algoritmo sequencial leva para calcular todo o vetor \emph{X} é menor que o tempo que cada nó leva para calcular sua faixa de \emph{X} (começando em \emph{a} e terminando em \emph{b}) mais o tempo gasto na propagação dos resultados dos nós.
+\indent O fato de que para matrizes pequenas o programa sequencial é melhor que o paralelo pode ser explicado através da Equação~\ref{eq-tmp}. Isto é, o tempo que o algoritmo sequencial leva para calcular todo o vetor \emph{x} é menor que o tempo que cada nó \emph{j} leva para calcular sua faixa de \emph{x} (começando em \emph{\begin{math}a_j\end{math}} e terminando em \emph{\begin{math}b_j\end{math}}) mais o tempo gasto na propagação dos resultados dos nós.
 \begin{eqnarray} \label{eq-tmp}
-	t(X) \le t(\sum_{i=a}^{b}X_i) + t(propagacao)
+	t(x) \le t(\sum_{i=a_j}^{b_j}x_i) + t(propagacao) \qquad \textrm{todo j}
 \end{eqnarray}
 
 \newpage
