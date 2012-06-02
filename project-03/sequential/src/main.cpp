@@ -24,6 +24,8 @@ void init()
 			scanf("%lf", &mat[i][j]);
 	for (int i = 0; i < n; ++i)
 		scanf("%lf", &b[i]);
+		
+	// Identifies the matrix and b vector.
 	for (int i = 0; i < n; ++i)
 	{
 		double div = mat[i][i];
@@ -31,6 +33,7 @@ void init()
 			mat[i][j] /= div;
 		b[i] /= div;
 	}
+	
 	for (int i = 0; i < n; ++i)
 		x[i] = b[i];
 }

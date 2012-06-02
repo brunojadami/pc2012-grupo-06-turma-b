@@ -86,16 +86,18 @@ Lucas Lobosque\\
 	\frac{\parallel x^{(k)} - x^{(k-1)}\parallel_\infty}{\parallel x^{(k)}\parallel_\infty} < \epsilon
 \end{eqnarray}
 \indent Apresentado os conceitos necessários, o objetivo do trabalho é a implementação do método de Jacobi-Richardson utilizando uma abordagem sequencial e uma paralela usando OpenMP e MPI. Ao final, há uma discução dos resultados obtidos pelas duas abordagens.
+
 \section{A abordagem sequencial}
+\indent \indent A abordagem sequencial do método não tem segredos. Ela segue os passos do algoritmo fielmente. Primeiro, o programa carrega o arquivo de entrada. Logo após, ele aplica o método de Jacobi-Richardson. No final, o resultado da execução é mostrada de acordo com a especificação do trabalho.
 
 \section{A abordagem paralela}
-\indent \indent O método pode ser considerado como um algoritmo iterativo paralelo. Isto é, a cada iteração, cada \begin{math}x^{(k)}_i\end{math} pode ser calculado independentemente das outras variáveis na mesma iteração. Portanto, é possível aplicar uma decomposição de dados, onde a cada passo, o vetor \emph{x} é distribuído entre os nós para ser calculado, cada nó recebendo uma faixa de variáveis, conforme ilustra a figura~\ref{pic-dec}.\\
+\indent \indent A abordagem paralela segue a linha do programa sequencial decompondo-o em partes paralelas. O método pode ser considerado como um algoritmo iterativo paralelo. Isto é, a cada iteração, cada \begin{math}x^{(k)}_i\end{math} pode ser calculado independentemente das outras variáveis na mesma iteração. Portanto, é possível aplicar uma decomposição de dados, onde a cada passo, o vetor \emph{x} é distribuído entre os nós para ser calculado, cada nó recebendo uma faixa de variáveis, conforme ilustra a Figura~\ref{pic-dec}.\\
 \begin{figure}[float=p]
 	\centerline{\includegraphics[width=408px, height=230px]{dec}}
 	\caption{Decomposição de dados}
 	\label{pic-dec}
 \end{figure}
-\indent O fluxo de dados segue a lógica da figura~\ref{pic-data}. O primeiro processo, o processo mestre é responsável pela administração de todo o processo. Ele carrega os arquivos de entrada, controla a cadeia de mensagens, envia aos outros processos pedaços do problema e verifica a condição de parada.\\
+\indent O fluxo de dados segue a lógica da Figura~\ref{pic-data}. O primeiro processo, o processo mestre é responsável pela administração de todo o processo. Ele carrega os arquivos de entrada, controla a cadeia de mensagens, envia aos outros processos pedaços do problema e verifica a condição de parada.\\
 \indent Em relação à matriz \emph{A}, o processo principal contém todos os seus valores, obtidos durante o carregamento do problema. Quanto aos processos secundários, o mestre envia a eles somente a faixa necessária para que eles possam executar o processo. Isto é feito através da chamada \emph{scatter} do MPI. Essa abordagem é possível pelo fato de que para o cálculo de \begin{math}x_i\end{math}, somente a linha \emph{i} da matriz \emph{A} é necessária.\\
 \indent O mesmo ocorre com o vetor \emph{b}. Para calcular \begin{math}x_i\end{math}, somente o valor da posição \emph{i} do vetor \emph{b} é necessário. Uma chamada à função \emph{scatter} é feita e cada processo secundário somente trabalha com a faixa que lhe diz respeito.\\
 \indent Para o vetor \emph{X}, é necessário a cada iteração de todo o seu conteúdo completo. Portanto, um \emph{broadcast} do MPI é feito pelo processo mestre a todos os processos antes que as iterações comecem (\begin{math}x^{(0)}\end{math}).\\
@@ -108,7 +110,30 @@ Lucas Lobosque\\
 \indent Os macros OpenMP foram utilizados com 4 threads. Há um macro para paralelizar o processo de normalização da matriz \emph{A} antes do início do algoritmo. Há também um macro que paraleliza o cálculo de todos os \begin{math}x_i\end{math} pertencentes à faixa do processo. Para cada \begin{math}x_i\end{math}, outro macro é utilizado na multiplicação feita entre o vetor \emph{x} e a linha \emph{i} da matriz \emph{A}. Um macro foi criado para checar a condição de parada do algoritmo (definido na equação~\ref{eq-stp}). Finalmente, um último macro é usado para obter a solução do problema.
 
 \section{Resultados e conclusões}
+\indent \indent Os experimentos consistem em 3 tipos de execução: sequencial, paralela com 5 nós e paralela com 10 nós. Cada tipo foi executado 7 vezes, seguindo uma ordem circular. As médias dos tempos de execução foram tiradas a partir dos resultados. A tabela~\ref{tab-speedups} mostra os speed-ups dos programas. Segundo ela, o programa sequencial é melhor para matrizes pequenas, de tamanho até 500. Para a execução de 5 nós, o speed-up só foi bom quando esse tamanho chega a 1500. Já para 10 nós, é possível perceber que na matriz de tamanho 500, há uma competição entre os programas paralelo e sequencial. Para as matrizes maiores que esse tamanho, essa execução obteve tempos muito bons.\\
+\begin{table}[float=h!]\footnotesize \centerline{\begin{tabular}{|l|l|l|}
+	\hline
+	Tamanho da matriz 	& Paralelo c/ 5 nós 	& Paralelo c/ 10 nós 	\\ \hline
+	250 			& 38\%			& 33\%			\\ \hline
+	500 			& 75\% 			& 97\%			\\ \hline
+	1000 			& 57\% 			& 142\%			\\ \hline
+	1500 			& 117\% 		& 201\%			\\ \hline
+\end{tabular}} \caption{Speed-ups} \label{tab-speedups} \end{table}
 
+\indent A Figura~\ref{pic-graph} ilustra os tempos para o algoritmo resolver os problemas dos 3 tipos de execução. O eixo x representa o tamanho da matriz enquanto o eixo y diz respeito ao tempo de execução em segundos. Olhando para o gráfico, conclui-se que com o aumento das matrizes, a execução paralela é melhor que a sequencial, com a configuração de 10 nós sendo melhor que a de 5 nós.\\
+\begin{figure}[float=h]
+	\centerline{\includegraphics[width=344px, height=227px]{graph}}
+	\caption{Gráfico de tempos}
+	\label{pic-graph}
+\end{figure}
+
+\newpage
+\indent O fato de que para matrizes pequenas o programa sequencial é melhor que o paralelo pode ser explicado através da Equação~\ref{eq-tmp}. O tempo que o algoritmo sequencial leva para calcular todo o vetor \emph{X} é menor que o tempo que cada nó leva para calcular sua faixa de \emph{X} (começando em \emph{a} e terminando em \emph{b}) mais o tempo gasto na propagação dos resultados dos nós.
+\begin{eqnarray} \label{eq-tmp}
+	t(X) \le t(\sum_{i=a}^{b}X_i) + t(propagacao)
+\end{eqnarray}
+
+\newpage
 \begin{thebibliography}{99}
 	\bibitem[Jacobi-Richardson]{jari} Franco, Neide Bertoldi; Cálculo Numérico - São Paulo: Pearson Prentice Hall, 2006
 	\bibitem[OpenMP]{mp1} http://bisqwit.iki.fi/story/howto/openmp/
