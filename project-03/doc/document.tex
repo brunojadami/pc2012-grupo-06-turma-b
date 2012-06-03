@@ -92,8 +92,8 @@ Lucas Lobosque\\
 
 \section{A abordagem paralela}
 \indent \indent A abordagem paralela segue a linha do programa sequencial decompondo-o em partes paralelas. O método pode ser considerado como um algoritmo iterativo paralelo. Isto é, a cada iteração, cada \begin{math}x^{(k)}_i\end{math} pode ser calculado independentemente das outras variáveis na mesma iteração. Portanto, é possível aplicar uma decomposição de dados, onde a cada passo, o vetor \emph{x} é distribuído entre os nós para ser calculado, cada nó recebendo uma faixa de variáveis, conforme ilustra a Figura~\ref{pic-dec}.\\
-\begin{figure}[float=p]
-	\centerline{\includegraphics[width=408px, height=230px]{dec}}
+\begin{figure}[float=h!]
+	\centerline{\includegraphics[width=285px, height=161px]{dec}}
 	\caption{Decomposição de dados}
 	\label{pic-dec}
 \end{figure}
@@ -102,13 +102,14 @@ Lucas Lobosque\\
 \indent O mesmo ocorre com o vetor \emph{b}. Para calcular \begin{math}x_i\end{math}, somente o valor da posição \emph{i} do vetor \emph{b} é necessário. Uma chamada à função \emph{scatter} é feita e cada processo secundário somente trabalha com a faixa que lhe diz respeito.\\
 \indent Para o vetor \emph{X}, é necessário a cada iteração ter todo o seu conteúdo completo. Portanto, um \emph{broadcast} do MPI é feito pelo processo mestre a todos os processos antes que as iterações comecem (\begin{math}x^{(0)}\end{math}).\\
 \indent Ao término de cada iteração, os valores obtidos estão armazenados no vetor \emph{X\_}, cada processo contendo sua faixa de valores. Para prosseguir com a próxima iteração, o \emph{allgather} do MPI é chamado sobre o vetor \emph{X}, garantindo a atualização desse vetor a todos os nós.\\
-\begin{figure}[float=p]
-	\centerline{\includegraphics[width=408px, height=450px]{data}}
+\begin{figure}[float=h!]
+	\centerline{\includegraphics[width=285px, height=315px]{data}}
 	\caption{Fluxo de dados}
 	\label{pic-data}
 \end{figure}
 \indent Os macros OpenMP foram utilizados com 4 threads. Há um macro para paralelizar o processo de normalização da matriz \emph{A} antes do início do algoritmo. Há também um macro que paraleliza o cálculo de todos os \begin{math}x_i\end{math} pertencentes à faixa do processo. Para cada \begin{math}x_i\end{math}, outro macro é utilizado na multiplicação feita entre o vetor \emph{x} e a linha \emph{i} da matriz \emph{A}. Um macro foi criado para checar a condição de parada do algoritmo (definido na Equação~\ref{eq-stp}). Finalmente, um último macro é usado para obter a solução do problema.
 
+\newpage
 \section{Resultados e conclusões}
 \indent \indent Os experimentos consistem em 3 tipos de execução: sequencial, paralela com 5 nós e paralela com 10 nós. Cada configuração foi executada 7 vezes, seguindo uma ordem circular. As médias dos tempos de execução foram tiradas a partir dos resultados e a Tabela~\ref{tab-speedups} mostra os speed-ups dos programas.\\
 \indent Segundo a tabela, o programa sequencial é melhor para matrizes pequenas, de tamanho até 500. Para a execução de 5 nós, o speed-up só foi bom quando esse tamanho chega a 1500. Já para 10 nós, é possível perceber que na matriz de tamanho 500, há uma competição entre os programas paralelo e sequencial. Para as matrizes maiores que esse tamanho, essa configuração obteve tempos muito bons.\\
@@ -122,19 +123,17 @@ Lucas Lobosque\\
 \end{tabular}} \caption{Speed-ups} \label{tab-speedups} \end{table}
 
 \indent A Figura~\ref{pic-graph} ilustra os tempos para o algoritmo resolver os problemas dos 3 tipos de execução. O eixo x representa o tamanho da matriz enquanto o eixo y diz respeito ao tempo de execução em segundos. Olhando para o gráfico, conclui-se que com o aumento das matrizes, a execução paralela é melhor que a sequencial, com a configuração de 10 nós sendo melhor que a de 5 nós.\\
-\begin{figure}[float=h]
+\begin{figure}[float=h!]
 	\centerline{\includegraphics[width=344px, height=227px]{graph}}
 	\caption{Gráfico de tempos}
 	\label{pic-graph}
 \end{figure}
 
-\newpage
 \indent O fato de que para matrizes pequenas o programa sequencial é melhor que o paralelo pode ser explicado através da Equação~\ref{eq-tmp}. Isto é, o tempo que o algoritmo sequencial leva para calcular todo o vetor \emph{x} é menor que o tempo que cada nó \emph{j} leva para calcular sua faixa de \emph{x} (começando em \emph{\begin{math}a_j\end{math}} e terminando em \emph{\begin{math}b_j\end{math}}) mais o tempo gasto na propagação dos resultados dos nós.
 \begin{eqnarray} \label{eq-tmp}
 	t(x) \le t(\sum_{i=a_j}^{b_j}x_i) + t(propagacao) \qquad \textrm{todo j}
 \end{eqnarray}
 
-\newpage
 \begin{thebibliography}{99}
 	\bibitem[Jacobi-Richardson]{jari} Franco, Neide Bertoldi; Cálculo Numérico - São Paulo: Pearson Prentice Hall, 2006
 	\bibitem[OpenMP]{mp1} http://bisqwit.iki.fi/story/howto/openmp/
