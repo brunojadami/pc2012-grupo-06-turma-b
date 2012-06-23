@@ -1,0 +1,58 @@
+
+
+Introdução:
+
+	Este projeto consiste em fazer uma aplicação paralela que gere palavras aleatóriamente, e a cada palavra gerada deve se verificar se ela está no dicionário e entrada. Caso ela esteja, ela deve ser removida. A aplicação acaba quando todas as palavras são geradas. Há várias maneiras de se interpretar o que foi pedido, portanto aqui iremos explicar qual foi a nossa interpretação que adotamos desde o início do projeto. 
+	De maneira geral o projeto tem três módulos, a filtragem do dicionário, a geração das palavras aleatórias e a busca e remoção no dicionário. Nós geramos palavras inteiras de tamanho 5, e depois verificamos se esta existe no dicionário, caso exista nós a removemos e imprimimos na tela. Para palavras de tamanho menor do que 5, comparamos as primeiras letras. Como pode ter vários prefixos de palavras iguais (ex: abcde, abc), nós escolhemos a palavra de tamanho maior primeiro, e caso haja empate, a primeira que foi carregada do dicionário será escolhida. Para palavras de tamanho maior do que 5 nós a dividimos em várias palavras de tamanho 5 onde depois de gerada uma destas partes, nós checamos se todas as outras partes desta palavra composta foram geradas, caso positivo nós a imprimimos na tela. Esta decomposição está melhor explicada nas próximas seções.
+	
+Filtragem do dicionário:
+
+	Primeiramente decidimos filtrar o dicionário de entrada fornecido no site da disciplina. Nós construímos um programa serial que carrega as palavras eliminando as letras inválidas (vírgulas, espaços e outros símbolos). Além disso nós verificamos e eliminamos palavras repetidas. Para desenvolver tal programa, implementamos uma árvore de prefixos, mais conhecida como trie. Ela é uma árvore onde cada ramo representa uma letra de ramificação da palavra. A complexidade de inserção e busca nesta estrutura de dados é de O(n), onde n é o tamanho da string a ser inserida. No total a complexidade é linear (O(n) onde n é o tamanho de todas as palavras juntas), linear na leitura do arquivo e linear na manipulação da trie. A complexidade em memória também é de O(n), onde n é o tamanho de todas as palavras juntas, pois cada nó aloca dinâmicamente os ramos da árvore. Para mais informações sobre esta estrutura consultar ***
+	No fim, temos um arquivo com as palavras do diconário com letras de a-z apenas, uma por linha. No total o arquivo tem *** palavras e um tamanho de *** KB.
+	
+Separando o problema em vários nós (hosts):
+
+	Um dos requisitos do projeto é de usar os hosts do cluster da disciplina para fazer o processamento do problema. Para isso é utilizado a biblioteca MPI. Chegamos a duas abordagens possíveis. A primeira seria de alguma forma compartilhar todo o dicionário para todos os nós, e também sincronizar a remoção de palavras geradas do mesmo. Isto causaria um enorme tráfego na rede e descartamos esta abordagem. A segunda, que foi a adotada, foi de separar o dicionário para cada host. As palavras compostas devem ficar nos mesmos hosts para evitar a comunicação entre os nós, aumentando a eficiência da abordagem. Ao separar o dicionário em vários nós não há nenhum speedup (negativo ou positivo), pois como as palavras são geradas aleatóriamente (uniformemente), a probabilidade a cada 'ciclo' de execução de uma palavra ser removida do dicionário é a mesma. A seguir uma pequena demonstração matemática comprovando o fato:
+	
+	Suponha que temos M palavras todas de tamanho 5 no dicionário. Suponhamos que a probabilidade de cada palavra sair seja 1/26^5. A probabilidade em um passo de gerar alguma palavra do dicionário é de M/26^5. Se separarmos entre três nós o dicionário, ficando A palavras para o primeiro, B para o segundo e C para o terceiro, a esperança (média) de palavras geradas será de A/26^5 + B/26^5 + C/26^5, isto é (A+B+C)/26^5. Como A+B+C = M, então temos a mesma probabilidade! 
+	
+	Ao incluir palavras de tamanho menor, a demonstração fica um pouco mais complexa, mas o resultado deve ser o mesmo. Na prática nós testamos se a nossa suposição matemática estava certa, e comprovamos que realmente o speedup é de 1! Também testamos a mesma teoria no próprio nó, e o mesmo foi observado. Portanto devemos focar o speedup do problema em cada nó, ou seja, na parte onde separamos o problema no próprio host. Ao conseguirmos um speedup de X em cada nó, o speedup total será de X*Y + T onde Y é a quantidade de nós e T o tempo inicial para separarmos as palavras para cada host.
+	
+Geração das palavras aleatórias:
+
+	Do primeiro trabalho ***, na parte de gerar números aleatórios para fazer o método de Monte Carlo, nós já sabíamos que a função rand da stdlib no C, na implementação da libC no Linux, usava de travamentos de contexto para gerar o número aleatório, então devemos criar um novo gerador de números aleatórios. Usamos um gerador congruente linear, o mesmo usado pela libC, porém com os parâmetros personalizados para o problema:
+	
+	M = 11881376, sao 26^5 palavras possíveis de tamanho 5
+	A = 53
+	C = 3
+	
+	O parâmetro A e C devem obedecer as restrições dadas em ***. Também criamos um programa para testar se realmente o gerador era uniforme. Se gerarmos letra a letra, a probabilidade de se gerar uma palavra de tamanho 5 qualquer é de 1/26^5, ao invés de gerar letra a letra nós representamos a palavra como um número de tamanho 5 na base 26 (0-11881376), são 26^5 números e cada um tem a mesma chance de ser escolhido (pois é um gerador uniforme), assim a probabilidade fica 1/26^5, a mesma de se gerar letra a letra!
+
+Processando o problema em cada nó (host):
+
+	Agora temos em cada nó o mesmo problema, dado o dicionário gerar palavras de tamanho 5 aleatoriamente e remover as achadas até que não exista mais palavras no dicionário. Inicialmente tentamos adotar a trie para representar o dicionário, pois a usamos na filtragem do dicionário e ela é uma estrutura muito simples e eficiente. Então de algum modo devemos paralelizar as funções de busca e remoção nesta estrutura. 
+	Para paralelizar o problema em cada nó usamos a Pthreads, pois esta API fornece uma programação bem mais baixo nível em relação a OpenMP. Isto não indica que o problema nao pode ser paralelizado usando OpenMP, foi só uma escolha nossa.
+	Como é uma 'árvore' de prefixos, o modo mais intuitivo de fazer estas funções é com buscas em profundidade, porém ao criarmos mais de uma unidade de processamento para fazer esta busca, devemos de algum modo garantir que os nós estejam sincronizados. Na prática, tivemos que inserir vários trancamentos de contextos (mutex locks), e o resultado não foi muito satisfatório. Também tentamos uma abordagem de busca em largura nesta árvore, mas antes de ir para a prática decidimos pensar um pouco mais se a árvore era realmente a estrutura mais fácil e eficiente disponível para resolver o problema.
+	Foi então que percebemos que a solução estava sob nossos olhos o tempo todo! Hashing!! O número aleatório de tamanho 5 na base 26 gerado pelo nosso gerador linear congruente nada mais faz do que gerar uma hash para a palavra, a função hash é muito simples:
+	
+	funcaoHash(str) = 26^0*(str[0] - 'a') + 26^1*(str[1] - 'a') + 26^2*(str[2] - 'a') + 26^3*(str[3] - 'a') + 26^4*(str[4] - 'a')
+	
+	Então o que se implementou foi, cada thread gera uma hash que representa uma palavra de tamanho 5, se esta hash existe no dicionário então nós a tiramos de lá. O dicionário nada mais é do que um vetor de inteiros de tamanho 26^5, onde cada posição indexa o hash da string e quantas delas existem. Em torno de 40MB de memória é usado, muito maior do que a trie, porém a complexidade de busca/remoção na execução é de O(1)! Para sincronizar as várias threads que geram estas hashes usamos os travamentos de contexto, e o resultado foi o esperado, speedup de 4x! (na máquina que testamos o processador era quadicore). Para montar o dicionário no começo do programa a complexidade em tempo é a mesma do que a trie, pois o cálculo da hash da palavra é linear no tamanho dela. Problema resolvido, o speedup será agora proporcional ao número de hosts X número de unidades de processamento de cada host.
+	
+Palavras de tamanho diferente do que 5:
+
+	O dicionário tem uma separação por tamanho de palavras, ou seja, o dicionário tem uma partição para palavras de tamanho 5, outra para as de 4, e assim até as de tamanho 1. Não podemos tratar o hash de palavras de tamanho 5 com de outros tamanhos (ex: hash("aaaaa") = 0, hash("a") = 0), portanto após gerar uma hash randômica checamos primeiro por palavras de tamanho 5, depois de 4, e assim em diante.
+	Um outro problema é o que fazer com as palavras de tamanho maior do que 5. Na especificação do projeto foi decidido que palavras maiores do que este número devem ser quebradas em várias palavras deste tamanho, pois imagine a eternidade de se gerar uma palavra de tamanho 7: 1/26^7 = +- 8 bilhões de iterações, este número cresce exponencialmente à medida que o tamanho da palavra cresce.
+	Nossa solução quebra estas palavras em palavras de tamanho 5 (ou menos caso for a última parte), e atribui à elas um identificador e qual parte da palavra toda esta pequena parte representa, observe que para palavras de tamanho menor ou igual a 5 também receberão um identificador, e elas representam toda a palavra. Há um vetor global que guarda as informações de todas as palavras, indexado pelo identificador da palavra, e cada posição guarda qual palavra é, quantas partes tem e quais já foram sorteadas. Este vetor nada mais é do que um complemento do dicionário como um todo. As partes das palavras recebem uma máscara que devem setar no vetor global de informações caso sejam sorteadas, para entender melhor fizemos este exemplo:
+	
+	Palavra: "aaaaaba", ela deve ser separada em "aaaaa" e "ba", portanto teremos uma máscara de 2 partes, ou seja, 2 bits. A primeira parte ("aaaaa") deve setar o primeiro bit (1 em decimal ou 01 em binário), ou seja, fazer o 'or' com a máscara no vetor de informações. A segunda parte ("ba") deve setar o segundo bit (2 em decimal ou 10 em binário), também faz o 'or' com a máscara no vetor de informações. Quando o número de bits setados for igual ao número de partes, significa que a palavra foi totalmente gerada.
+	
+	vetor global das palavras => posição/id: 0 palavra: "aaaaaba" partes: 2 máscara: 0
+	dicionário indexado pelo hash => posição/hash: 0 id_palavra: 0 máscara: 1
+					 posição/hash: 1 id_palavra: 0 máscara: 2
+					 
+	Observe que pode existir mais de uma palavra de tamanho 5 (ou outros tamanhos), representando partes de palavras diferentes, será escolhido o que primeiro foi adicionado no dicionário, no fim das contas o tempo total de geração das palavras será o mesmo.
+	
+Conclusão:
+
+	

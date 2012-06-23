@@ -5,7 +5,7 @@
 // Parameters of the linear random number generator.
 #define A 53
 #define C 3
-#define M 11881376
+#define M 11881376 // 26^5
 
 /**
  * Constructor.
