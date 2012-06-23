@@ -2,79 +2,99 @@
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
-#include <list>
-#include "trie.h"
+#include <vector>
+#include <pthread.h>
 #include "random.h"
+#include "info.h"
 
-#define GENERATES 1
+using namespace std;
 
-Trie t;
+#define THREADS 4
+#define TOTAL_HASH 11881376 // 26^5
+
 int id = 0, left = 0;
 Info words[NUM_WORDS];
-
-pthread_t threads[26];
+vector<InfoSet> hash[MAX_WORD_LEN][TOTAL_HASH]; 
+int hashCount[MAX_WORD_LEN][TOTAL_HASH]; // Initialized with 0.
+pthread_t threads[THREADS];
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 void* function(void* arg)
 {
-	int c = *(int*)arg;
 	Random r;
 	r.seed();
-	while (t.hasChild(c) && !t.t[c]->emptyLeaf())
+	
+	while (left)
 	{
 		int num = r.next();
-		if (num%26 != c) continue;
-		t.generate(words, num, id, left, lock);
+		int use = num;
+		int mod = TOTAL_HASH;
+		for (int i = MAX_WORD_LEN-1; i >= 0; --i)
+		{
+			use %= mod;
+			mod /= 26;
+			if (hashCount[i][use] != 0)
+			{
+				pthread_mutex_lock(&lock);
+				if (hashCount[i][use] != 0)
+				{
+					hashCount[i][use]--;
+					left--;
+					InfoSet s = hash[i][use][hashCount[i][use]];
+					words[s.id].mask |= s.mask;
+					if (__builtin_popcount(words[s.id].mask) == words[s.id].len)
+					{
+						//printf("%s\n", words[s.id].str);
+						id--;
+					}
+				}
+				pthread_mutex_unlock(&lock);
+				break;
+			}
+		}
 	}
+	
 	return NULL;
 }
 
-void* function2(void* arg)
+void hashString(char* str, int len, int id, int b)
 {
-	int c = *(int*)arg;
-	Random r;
-	r.seed();
-	bool g = 1;
-	while (!t.emptyLeaf())
+	int num = 0;
+	int use = len > MAX_WORD_LEN ? MAX_WORD_LEN : len;
+	for (int i = 0; i < use; ++i)
 	{
-		t.generate(words, r.next(), id, left, lock);
+		num *= 26;
+		num += str[i]-'a';
 	}
-	return NULL;
+	hash[use-1][num].push_back(InfoSet(id, 1<<b));
+	hashCount[use-1][num]++;
+	if (len > MAX_WORD_LEN) hashString(str+MAX_WORD_LEN, len-MAX_WORD_LEN, id, b+1);
 }
 
 int main()
 {
 	srand(time(NULL));
 	
-	int cnt = 0;
-	
 	while (scanf("%s", words[id].str) == 1)
 	{
 		int len = strlen(words[id].str);
 		int num = len/MAX_WORD_LEN;
 		if (len%MAX_WORD_LEN) ++num;
-		cnt += len*num;
 		words[id].len = num;
-		t.insert(words[id].str, &t, id);
+		hashString(words[id].str, len, id, 0);
 		++id;
 		left += num;
 	}
 	
-	printf("%d\n", cnt);
-	
-	int use[26];
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < THREADS; ++i)
 	{
-		use[i] = i;
-		pthread_create(&threads[i], NULL, function2, &use[i]);
+		pthread_create(&threads[i], NULL, function, NULL);
 	}
 	
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < THREADS; ++i)
 	{
 		pthread_join(threads[i], NULL);
 	}
-	
-	t.clean();
 	
 	return 0;
 }
