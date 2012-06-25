@@ -4,6 +4,8 @@
 #include <cstring>
 #include <cstdlib>
 
+#include "runner.h"
+
 // Maximum word size (+1).
 #define WORD_SIZE 46
 
@@ -14,7 +16,7 @@ char* createArray(int);
 char** createArrayList(int);
 
 // Words array.
-char** words;
+char** array;
 // Range of words, the size of the words array, set on the init.
 int range;
 // Rank of this run.
@@ -35,6 +37,8 @@ int main(int argc, char** argv)
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         
 	init();
+	
+	run(array, range);
 	
 	MPI_Finalize();
 
@@ -65,7 +69,7 @@ void init()
 	if (rank == 0)
 	{
 		// Rank 0 contains the entire array.
-		words = createArrayList(n);
+		array = createArrayList(n);
 	
 		int i = 0;
 		int host = 1;
@@ -75,7 +79,7 @@ void init()
 		// Parses the words.
 		while (scanf("%s", word) != EOF)
 		{
-			strcpy(words[i], word);
+			strcpy(array[i], word);
 			
 			// Checks if it is the first range, for the first rank (don't need to send).
 			if (i < range)
@@ -89,7 +93,7 @@ void init()
 			{
 				buffer_ += " ";
 			}
-			buffer_ += words[i];
+			buffer_ += array[i];
 			
 			// Checks if the range is over.
 			if ((i + 1) % range == 0 && host != hosts - 1 || (i + 1) == n)
@@ -111,7 +115,7 @@ void init()
 	else
 	{
 		// The other ranks contain only a range of the words.
-		words = createArrayList(range);
+		array = createArrayList(range);
 		
 		MPI_Status status;
 		MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
@@ -127,7 +131,7 @@ void init()
 		// Parses the buffer received.
 		while (sscanf(buffer + pointer, "%s%n", word, &bytesRead) != EOF)
 		{
-			strcpy(words[i], word);
+			strcpy(array[i], word);
 			i++;
 			pointer += bytesRead;
 		}
