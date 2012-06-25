@@ -23,7 +23,7 @@ debug: build
 release: build
 
 build: main.o info.o random.o runner.o
-	$(CC) $(MPI_COMPILE_FLAGS) $(FLAGS) main.o info.o random.o runner.o -o main $(MPI_LINK_FLAGS)
+	$(CC) $(MPI_COMPILE_FLAGS) $(FLAGS) $(MPI_LINK_FLAGS) main.o info.o random.o runner.o -o main 
 
 main.o: main.cpp
 	$(CC) -c $(MPI_COMPILE_FLAGS) $(FLAGS) $(MPI_LINK_FLAGS) main.cpp
