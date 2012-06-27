@@ -73,7 +73,7 @@ Lucas Lobosque\\
 
 \section{Filtragem do Dicionário}
 \indent \indent O dicionário de entrada fornecido no site da disciplina foi filtrado. Um programa serial que carrega as palavras eliminando as letras inválidas (vírgulas, espaços e outros símbolos) foi desenvolvido. Além disso, foi efetuada uma identificação e eliminação de palavras repetidas. Para desenvolver tal programa, uma árvore de prefixos foi implementada, conhecida como \emph{trie}. Ela é uma árvore onde cada ramo representa uma letra de ramificação da palavra. A complexidade de inserção e busca nesta estrutura de dados é de \begin{math}O(n)\end{math}, onde \begin{math}n\end{math} é o tamanho da \emph{string} a ser inserida. A complexidade é linear (\begin{math}O(n)\end{math} onde \emph{n} é o tamanho de todas as palavras juntas) na leitura do arquivo e na manipulação da \emph{trie}. A complexidade em memória também é de \begin{math}O(n)\end{math}, onde \emph{n} é o tamanho de todas as palavras juntas, pois cada nó aloca dinâmicamente os ramos da árvore.\\
-\indent No final da filtragem, há a produção de um arquivo com as palavras do diconário com letras de a-z apenas, uma em cada linha. No total, o arquivo tem *** palavras e um tamanho de *** \emph{KB}.
+\indent No final da filtragem, há a produção de um arquivo com as palavras do diconário com letras de a-z apenas, uma em cada linha. No total, o arquivo tem 65813 palavras e um tamanho de 616\emph{KB}.
 
 \section{Separação do Problema em Vários \emph{Hosts}}
 \indent \indent  Um dos requisitos do projeto é o de usar os \emph{hosts} do \emph{cluster} da disciplina para fazer o processamento do problema. Para isso é utilizado a biblioteca \emph{MPI}. Duas abordagens possíveis foram estudadas. A primeira é de alguma forma compartilhar todo o dicionário para todos os nós e sincronizar a remoção de palavras geradas do mesmo. Isso causa um enorme tráfego na rede e esta abordagem foi descartada. A segunda, adotada no projeto, é separar o dicionário em cada \emph{host}. As palavras compostas devem ficar nos mesmos \emph{hosts} para evitar a comunicação entre os nós, aumentando a eficiência da abordagem. Na separação do dicionário não há nenhum \emph{speedup} (negativo ou positivo), pois como as palavras são geradas aleatóriamente (uniformemente), a probabilidade a cada ciclo de execução de uma palavra ser removida do dicionário é a mesma.\\
@@ -113,39 +113,35 @@ Lucas Lobosque\\
 \indent Podem existir mais de uma palavra de tamanho 5 (ou outros tamanhos), representando partes de palavras diferentes. Será escolhido o que primeiro foi adicionado no dicionário. No final, o tempo total de geração das palavras será o mesmo.
 	
 \section{Resultados e Conclusões}
+\indent \indent Uma execução em uma máquina local foi feita para comprovar que a suposição sobre a separação do problema em vários \emph{hosts} iria ser proporcional ao \emph{speedup} em cada nó. Para isso o arquivo do dicionário foi separado em duas, quatro e oito partes e foi executado a versão com uma \emph{thread} em cada um destes pedaços do dicionário. Portanto, o \emph{speedup} é da ordem de 1:	
+\begin{itemize}
+	\item 1 parte: 4m5.889s
+	\item 2 partes: 2m17.614s + 1m50.646s = 4m8.260s
+	\item 4 partes: 1m16.884s + 0m51.535s + 0m43.798s + 1m31.629s = 4m23.846s
+	\item 8 partes: 0m49.536s + 0m39.686s + 0m34.536s + 0m19.279s + 0m24.148s + 0m22.988s + 0m39.004s + 0m35.433s = 4m24.610s
+\end{itemize}
+\indent É possível observar uma pequena diferença entre os tempos pelo tempo de inicialização do programa. Porém, o \emph{speedup} observado foi realmente de 1.\\
+\indent Depois foi executada a versão final (paralela) no \emph{cluster} da disciplina com 4 \emph{threads} em cada host, tirando uma média entre 10 repetições. O resultado se encontra na Figura~\ref{pic-graph}.\\
+\begin{figure}[float=h!]
+	\centerline{\includegraphics[width=285px, height=215px]{graph}}
+	\caption{Execuções no \emph{cluster}}
+	\label{pic-graph}
+\end{figure}
 
-	Foi executado na máquina local um teste para comprovar que a suposição feita sobre a separação do problema em vários hosts iria ser proporcional ao speedup em cada nó. Para isso apenas se separou o arquivo do dicionário em duas partes, quatro e oito e foi executado a versão com uma thread em cada um destes pedaços do dicionário, portanto o speedup deveria ser de 1:
-	
-	1 parte: 4m5.889s
-	2 partes: 2m17.614s + 1m50.646s = 4m8.260s
-	4 partes: 1m16.884s + 0m51.535s + 0m43.798s + 1m31.629s = 4m23.846s
-	8 partes: 0m49.536s + 0m39.686s + 0m34.536s + 0m19.279s + 0m24.148s + 0m22.988s + 0m39.004s + 0m35.433s = 4m24.610s
-	
-	Pode se observar uma pequena diferença entre os tempos, pelo tempo de inicialização do programa, porém o speedup observado foi realmente de 1.
-	
-	Depois foi executado a versão final (paralela) no cluster da disciplina com 4 threads cada host, e o resultado foi:
-	
-	** tabela **
-	
-	Agora fica comprovado que todo o desenvolvimento anterior sobre o problema está correto, já que o speedup foi proporcional ao número de hosts.
-	
-	Pode se concluir que muitas vezes a melhor solução para o problema sequencial não é totalmente aplicável e/ou pode se tornar fácilmente paralela. Devemos analisar de vários pontos de vista diferentes o problema, pois pode ser que a solução seja mais fácil do que parece e neste caso, estava já implementada de uma maneira indireta na geração de palavras aleatórias.
+\indent Agora, fica comprovado que toda a teoria desenvolvida anteriormente sobre o problema está correta, já que o \emph{speedup} foi proporcional ao número de hosts.\\
+\indent É possível concluir que muitas vezes a melhor solução para o problema sequencial não é totalmente aplicável e/ou pode se tornar fácilmente paralela. É necessário analisar os vários pontos de vista de um problema. A solução pode ser mais fácil do que parece e, neste caso, estava já implementada de uma maneira indireta na geração de palavras aleatórias.
 
 \begin{thebibliography}{99}
 
-[Probabilidades] http://mathworld.wolfram.com/DiscreteUniformDistribution.html
-[Random] http://pubs.opengroup.org/onlinepubs/009695399/functions/rand.html
-[GLibC] http://www.gnu.org/software/libc/download.html
-[Random] http://en.wikipedia.org/wiki/Linear_congruential_generator
-[PThreads] http://en.wikipedia.org/wiki/Native_POSIX_Thread_Library
-[PThreads] http://www.icir.org/gregor/tools/pthread-scheduling.html
-	\bibitem[MPI]{mpi1} http://www.slac.stanford.edu/comp/unix/farm/mpi.html
-	\bibitem[MPI]{mpi2} http://www.eecis.udel.edu/\~{}saunders/courses/372/01f/manual/manual.html
-	\bibitem[Gnuplot]{gnuplot}http://www.duke.edu/~hpgavin/gnuplot.html
-[Trie] http://www.cs.bu.edu/teaching/c/tree/trie/
-[Hashing]	http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-046j-introduction-to-algorithms-sma-5503-fall-2005/video-lectures/lecture-7-hashing-hash-functions/
-[Hashing]	http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-046j-introduction-to-algorithms-sma-5503-fall-2005/video-lectures/lecture-8-universal-hashing-perfect-hashing/
-
+	\bibitem[Probabilidades]{prob}http://mathworld.wolfram.com/DiscreteUniformDistribution.html
+	\bibitem[Random]{random}http://pubs.opengroup.org/onlinepubs/009695399/functions/rand.html
+	\bibitem[Random]{random2}http://en.wikipedia.org/wiki/Linear\_congruential\_generator
+	\bibitem[GLibC]{glibc}http://www.gnu.org/software/libc/download.html
+	\bibitem[PThreads]{pth1}http://en.wikipedia.org/wiki/Native\_POSIX\_Thread\_Library
+	\bibitem[PThreads]{pth2}http://www.icir.org/gregor/tools/pthread-scheduling.html
+	\bibitem[Trie]{trie}http://www.cs.bu.edu/teaching/c/tree/trie/
+	\bibitem[Hashing]{hash}http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-046j-introduction-to-algorithms-sma-5503-fall-2005/video-lectures/lecture-7-hashing-hash-functions/
+	\bibitem[Hashing]{hash2}http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-046j-introduction-to-algorithms-sma-5503-fall-2005/video-lectures/lecture-8-universal-hashing-perfect-hashing/
 	
 \end{thebibliography}
 \end{document}
