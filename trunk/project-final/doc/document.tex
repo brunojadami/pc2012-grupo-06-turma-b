@@ -87,7 +87,7 @@ Lucas Lobosque\\
 	A = 53\\
 	C = 3\\
 \end{eqnarray*}	
-\indent Os parâmetros \emph{A} e \emph{C} devem obedecer as restrições dadas em ***. Também, um programa para testar se realmente o gerador é uniforme foi criado. Se a geração ocorrer letra a letra, a probabilidade de se gerar uma palavra de tamanho 5 qualquer é de \begin{math}1/26^5\end{math}. Ao invés de gerar letra a letra, a palavra foi representada como um número de tamanho 5 na base 26 (0-11881376). São \begin{math}26^5\end{math} números e cada um tem a mesma chance de ser escolhido (geração uniforme). Assim a probabilidade é de \begin{math}1/26^5\end{math}, a mesma na geração letra a letra.
+\indent Os parâmetros \emph{A} e \emph{C} devem obedecer as restrições dadas em \cite{random2}. Também, um programa para testar se realmente o gerador é uniforme foi criado. Se a geração ocorrer letra a letra, a probabilidade de se gerar uma palavra de tamanho 5 qualquer é de \begin{math}1/26^5\end{math}. Ao invés de gerar letra a letra, a palavra foi representada como um número de tamanho 5 na base 26 (0-11881376). São \begin{math}26^5\end{math} números e cada um tem a mesma chance de ser escolhido (geração uniforme). Assim a probabilidade é de \begin{math}1/26^5\end{math}, a mesma na geração letra a letra.
 
 \section{Processamento do Problema em Cada \emph{Host}}
 \indent \indent Agora há em cada nó o mesmo problema. Dado o dicionário, gerar palavras de tamanho 5 aleatoriamente e remover as achadas até que não exista mais palavras no dicionário. Inicialmente, a \emph{trie} foi adotada para representar o dicionário, pois foi utilizada na filtragem do dicionário e ela é uma estrutura simples e eficiente. Então, de algum modo é preciso paralelizar as funções de busca e remoção nesta estrutura.\\
@@ -139,9 +139,14 @@ Lucas Lobosque\\
 	\bibitem[GLibC]{glibc}http://www.gnu.org/software/libc/download.html
 	\bibitem[PThreads]{pth1}http://en.wikipedia.org/wiki/Native\_POSIX\_Thread\_Library
 	\bibitem[PThreads]{pth2}http://www.icir.org/gregor/tools/pthread-scheduling.html
+	\bibitem[PThreads]{pth3}http://www.yolinux.com/TUTORIALS/LinuxTutorialPosixThreads.html
 	\bibitem[Trie]{trie}http://www.cs.bu.edu/teaching/c/tree/trie/
 	\bibitem[Hashing]{hash}http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-046j-introduction-to-algorithms-sma-5503-fall-2005/video-lectures/lecture-7-hashing-hash-functions/
 	\bibitem[Hashing]{hash2}http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-046j-introduction-to-algorithms-sma-5503-fall-2005/video-lectures/lecture-8-universal-hashing-perfect-hashing/
+	\bibitem[Hashing]{hash3}http://research.cs.vt.edu/AVresearch/hashing/strings.php
+	\bibitem[MPI]{mpi1} http://www.slac.stanford.edu/comp/unix/farm/mpi.html
+	\bibitem[MPI]{mpi2} http://www.eecis.udel.edu/\~{}saunders/courses/372/01f/manual/manual.html
+	\bibitem[Gnuplot]{gnuplot}http://www.duke.edu/~hpgavin/gnuplot.html
 	
 \end{thebibliography}
 \end{document}
